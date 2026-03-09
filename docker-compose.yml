@@ -39,7 +39,7 @@ services:
       - qdrant
       - redis
     command: >
-      uvicorn app.main:app --host 0.0.0.0 --port 8000
+      uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
 
   worker:
     build:
@@ -53,7 +53,7 @@ services:
       - qdrant
       - redis
     command: >
-      celery -A app.celery_app.celery worker --loglevel=INFO
+      celery -A backend.app.celery_app.celery worker --loglevel=INFO
 
 volumes:
   pgdata:
