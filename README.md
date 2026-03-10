@@ -69,7 +69,7 @@ kpm/
 ### 1. Clone repo
 
 ```bash
-git clone [https://gitlab.com/aitf2026/tim4-rag-mvp.git](https://github.com/setiazizah/kpm.git)
+git clone https://github.com/setiazizah/kpm.git
 cd kpm
 ```
 
