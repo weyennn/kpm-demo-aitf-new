@@ -79,29 +79,28 @@ Buat file `.env` di folder `kpm/`:
 
 ```env
 # Database
+# Postgres
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
+POSTGRES_DB=tim4db
 POSTGRES_USER=tim4
 POSTGRES_PASSWORD=tim4pass
-POSTGRES_DB=tim4db
-DATABASE_URL=postgresql+psycopg://tim4:tim4pass@postgres:5432/tim4db
 
-# Redis
-REDIS_URL=redis://redis:6379/0
+# Redis / Celery
+REDIS_HOST=redis
+REDIS_PORT=6379
+CELERY_BROKER_URL=redis://redis:6379/0
+CELERY_RESULT_BACKEND=redis://redis:6379/1
 
 # Qdrant
-QDRANT_HOST=qdrant
-QDRANT_PORT=6333
+QDRANT_URL=http://qdrant:6333
 
-# LLM — wajib diisi
-OPENAI_API_KEY=sk-...
-MODEL_MODE=mock          # mock | custom
+# External model endpoints (Tim 2 / Tim 3) - can be mock first
+TIM2_ANALYZE_ISSUE_URL=http://host.docker.internal:9002/api/v1/analyze-issue
+TIM3_STRATKOM_URL=http://host.docker.internal:9003/api/v1/generate-stratkom
 
-# Tim 2 & Tim 3 — isi saat model siap
-TIM2_API_URL=http://tim2-api:8001/v1
-TIM2_API_KEY=ganti-nanti
-TIM2_MODEL_ID=indo-sft-v1
-TIM3_API_URL=http://tim3-api:8002/v1
-TIM3_API_KEY=ganti-nanti
-TIM3_MODEL_ID=team3-comm-strategy-sft-v1
+# Fallback toggle (example)
+ENABLE_FALLBACK_LLM=true
 ```
 
 > **`MODEL_MODE=mock`** — selama model Tim 2 & Tim 3 belum siap, biarkan di `mock`. Tim 4 akan otomatis fallback ke GPT-4o. Ganti ke `custom` saat model siap, tanpa perlu ubah kode (ADR-001).
