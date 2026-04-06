@@ -1,14 +1,11 @@
 /**
- * Data API Client — untuk fetch semua data dari backend KPM
- * NOTE: Endpoint ini masih menggunakan dummy data karena backend belum siap
- * Ubah USE_DUMMY_FOR_DATA ke false ketika backend sudah implement endpoint
+ * Data API Client — fetch semua data dari backend KPM
+ * Base URL dikontrol via VITE_API_URL:
+ *   - Dev  : kosong → vite proxy → localhost:8000
+ *   - Prod : set VITE_API_URL=https://api.domain.com
  */
 
 import type {
-  DashboardMetrics,
-  TrendData,
-  SentimentData,
-  Issue,
   Content,
   MonitoringData,
   LabelingTask,
@@ -16,9 +13,7 @@ import type {
 } from '../types/index'
 
 const DEBUG = import.meta.env.VITE_DEBUG === 'true'
-
-// NOTE: Backend endpoints sudah siap! Menggunakan real data dari backend
-// Set ini ke true jika perlu fallback ke dummy data untuk debugging
+const BASE_URL = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
 const USE_DUMMY_FOR_DATA = false
 
 async function get<T>(path: string): Promise<T> {
@@ -26,46 +21,40 @@ async function get<T>(path: string): Promise<T> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
   if (token) headers['Authorization'] = `Bearer ${token}`
 
+  const url = `${BASE_URL}${path}`
+
   try {
-    if (DEBUG) console.log(`[DATA API] GET ${path}`)
-    
-    const res = await fetch(path, { method: 'GET', headers })
-    
-    if (!res.ok) {
-      throw new Error(`API ${path} gagal (${res.status})`)
-    }
-    
+    if (DEBUG) console.log(`[DATA API] GET ${url}`)
+    const res = await fetch(url, { method: 'GET', headers })
+    if (!res.ok) throw new Error(`API ${url} gagal (${res.status})`)
     const data = await res.json() as T
-    if (DEBUG) console.log(`[DATA API] Response dari ${path}:`, data)
+    if (DEBUG) console.log(`[DATA API] Response dari ${url}:`, data)
     return data
   } catch (err) {
-    console.error(`[DATA API ERROR] ${path}:`, err)
+    console.error(`[DATA API ERROR] ${url}:`, err)
     throw err
   }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DASHBOARD
+// DASHBOARD (real API)
 // ─────────────────────────────────────────────────────────────────────────────
 
-export async function getDashboardMetrics(): Promise<DashboardMetrics> {
-  // Selalu gunakan dummy untuk sekarang sampai backend ready
-  return getDummyDashboardMetrics()
+export async function getDashboardStats() {
+  try {
+    return await get<any>('/v1/dashboard/stats')
+  } catch {
+    return null
+  }
 }
 
-export async function getTrendData(): Promise<TrendData[]> {
-  // Selalu gunakan dummy untuk sekarang sampai backend ready
-  return getDummyTrendData()
-}
-
-export async function getSentimentData(): Promise<SentimentData> {
-  // Selalu gunakan dummy untuk sekarang sampai backend ready
-  return getDummySentimentData()
-}
-
-export async function getTopIssues(limit = 10): Promise<Issue[]> {
-  // Selalu gunakan dummy untuk sekarang sampai backend ready
-  return getDummyTopIssues(limit)
+export async function getDashboardTrend() {
+  try {
+    const res = await get<{ data: any[] }>('/v1/dashboard/trend')
+    return res.data ?? []
+  } catch {
+    return []
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -73,7 +62,6 @@ export async function getTopIssues(limit = 10): Promise<Issue[]> {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export async function getMonitoringData(): Promise<MonitoringData> {
-  // Selalu gunakan dummy untuk sekarang sampai backend ready
   return getDummyMonitoringData()
 }
 
@@ -87,20 +75,16 @@ export async function getBrowserContent(
   limit = 50,
   filterType = 'all',
 ): Promise<{ items: Content[]; total: number; page: number; limit: number }> {
-  if (USE_DUMMY_FOR_DATA) {
-    return getDummyBrowserContent(page, limit, filterType)
-  }
-  
+  if (USE_DUMMY_FOR_DATA) return getDummyBrowserContent(page, limit, filterType)
+
   try {
     const params = new URLSearchParams()
     params.append('page', String(page))
     params.append('limit', String(limit))
     params.append('filter_type', filterType)
     if (query) params.append('q', query)
-    
     return await get<any>(`/v1/browser/content?${params}`)
-  } catch (err) {
-    console.error('[API] getBrowserContent gagal, fallback ke dummy:', err)
+  } catch {
     return getDummyBrowserContent(page, limit, filterType)
   }
 }
@@ -110,7 +94,6 @@ export async function getBrowserContent(
 // ─────────────────────────────────────────────────────────────────────────────
 
 export async function getLabelingTasks(): Promise<LabelingTask[]> {
-  // Selalu gunakan dummy untuk sekarang sampai backend ready
   return getDummyLabelingTasks()
 }
 
@@ -119,14 +102,11 @@ export async function getLabelingTasks(): Promise<LabelingTask[]> {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export async function getCrawlingJobs(): Promise<CrawlingJob[]> {
-  if (USE_DUMMY_FOR_DATA) {
-    return getDummyCrawlingJobs()
-  }
-  
+  if (USE_DUMMY_FOR_DATA) return getDummyCrawlingJobs()
+
   try {
     return await get<CrawlingJob[]>('/v1/crawling/jobs')
-  } catch (err) {
-    console.error('[API] getCrawlingJobs gagal, fallback ke dummy:', err)
+  } catch {
     return getDummyCrawlingJobs()
   }
 }
@@ -136,14 +116,11 @@ export async function getCrawlingJobs(): Promise<CrawlingJob[]> {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export async function getMonitoringIssues(): Promise<any[]> {
-  if (USE_DUMMY_FOR_DATA) {
-    return getDummyMonitoringIssues()
-  }
-  
+  if (USE_DUMMY_FOR_DATA) return getDummyMonitoringIssues()
+
   try {
     return await get<any[]>('/v1/monitoring/issues')
-  } catch (err) {
-    console.error('[API] getMonitoringIssues gagal, fallback ke dummy:', err)
+  } catch {
     return getDummyMonitoringIssues()
   }
 }
@@ -153,93 +130,18 @@ export async function getMonitoringIssues(): Promise<any[]> {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export async function getSentimentAnalysis(): Promise<any> {
-  if (USE_DUMMY_FOR_DATA) {
-    return getDummySentimentAnalysis()
-  }
-  
+  if (USE_DUMMY_FOR_DATA) return getDummySentimentAnalysis()
+
   try {
     return await get<any>('/v1/sentiment/analysis')
-  } catch (err) {
-    console.error('[API] getSentimentAnalysis gagal, fallback ke dummy:', err)
+  } catch {
     return getDummySentimentAnalysis()
   }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DUMMY DATA FUNCTIONS
+// DUMMY FALLBACK — hanya untuk fitur yang belum ada endpoint real-nya
 // ─────────────────────────────────────────────────────────────────────────────
-
-function getDummyDashboardMetrics(): DashboardMetrics {
-  return {
-    total_issues: 124,
-    critical_issues: 8,
-    total_content: 3420,
-    sentiment_positive: 45,
-    sentiment_negative: 35,
-    sentiment_neutral: 20,
-    engagement_rate: 7.2,
-    last_update: new Date().toISOString(),
-  }
-}
-
-function getDummyTrendData(): TrendData[] {
-  return [
-    { date: '2026-03-25', volume: 520, positive: 240, negative: 180, neutral: 100 },
-    { date: '2026-03-26', volume: 640, positive: 280, negative: 200, neutral: 160 },
-    { date: '2026-03-27', volume: 780, positive: 350, negative: 270, neutral: 160 },
-    { date: '2026-03-28', volume: 1100, positive: 420, negative: 480, neutral: 200 },
-    { date: '2026-03-29', volume: 950, positive: 390, negative: 380, neutral: 180 },
-    { date: '2026-03-30', volume: 1200, positive: 450, negative: 500, neutral: 250 },
-    { date: '2026-03-31', volume: 1050, positive: 420, negative: 420, neutral: 210 },
-  ]
-}
-
-function getDummySentimentData(): SentimentData {
-  return {
-    positive: 45,
-    negative: 35,
-    neutral: 20,
-    trend: 'stable',
-    change_24h: 2,
-  }
-}
-
-function getDummyTopIssues(limit: number): Issue[] {
-  const issues: Issue[] = [
-    {
-      id: '1',
-      title: 'Kenaikan Harga BBM 15%',
-      description: 'Kenaikan harga BBM yang diumumkan pemerintah memicu reaksi negatif',
-      priority: 'critical',
-      sentiment: 'negative',
-      volume: 3241,
-      status: 'active',
-      created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-    {
-      id: '2',
-      title: 'Digitalisasi UMKM 2025',
-      description: 'Program digitalisasi UMKM mendapat respons beragam',
-      priority: 'high',
-      sentiment: 'mixed',
-      volume: 1820,
-      status: 'active',
-      created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-    {
-      id: '3',
-      title: 'Stabilitas Harga Pangan Nasional',
-      description: 'Kenaikan harga beras memicu kekhawatiran publik',
-      priority: 'high',
-      sentiment: 'negative',
-      volume: 2156,
-      status: 'active',
-      created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-  ]
-  
-  return issues.slice(0, limit)
-}
 
 function getDummyMonitoringData(): MonitoringData {
   return {
@@ -330,12 +232,7 @@ function getDummyMonitoringIssues() {
 
 function getDummySentimentAnalysis() {
   return {
-    overall: {
-      positive: 45,
-      negative: 35,
-      neutral: 20,
-      total_posts: 10247,
-    },
+    overall: { positive: 45, negative: 35, neutral: 20, total_posts: 10247 },
     by_source: {
       twitter: { positive: 50, negative: 30, neutral: 20 },
       tiktok: { positive: 40, negative: 40, neutral: 20 },
@@ -368,12 +265,5 @@ function getDummyBrowserContent(page = 1, limit = 50, filter_type = 'all') {
   if (filter_type === 'unlabeled') filtered = filtered.filter(c => c.sentiment === 'neutral')
 
   const start = (page - 1) * limit
-  const end = start + limit
-
-  return {
-    items: filtered.slice(start, end),
-    total: filtered.length,
-    page,
-    limit,
-  }
+  return { items: filtered.slice(start, start + limit), total: filtered.length, page, limit }
 }

@@ -2,7 +2,7 @@ import React from 'react'
 import {
   LayoutDashboard, Database, MessageSquare, FileText,
   Radio, ClipboardList, Clock, User, Activity,
-  PieChart, Tag, Wifi
+  PieChart, Tag, Wifi, MessageCircle
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import type { Page } from '../types'
@@ -26,7 +26,8 @@ const sections: { label: string; items: NavItem[] }[] = [
   {
     label: 'Analisis Isu',
     items: [
-      { id: 'chat',   label: 'Tanya Isu',     icon: <MessageSquare size={14} /> },
+      { id: 'chat',    label: 'Tanya Isu',      icon: <MessageSquare size={14} /> },
+      { id: 'chatbot', label: 'Chatbot Umum',   icon: <MessageCircle size={14} /> },
       { id: 'narasi', label: 'Viewer Narasi', icon: <FileText size={14} /> },
       { id: 'konten', label: 'Browser Konten',icon: <Database size={14} />,  badge: { text: '1.2k', variant: 'blue' } },
     ]

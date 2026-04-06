@@ -1,57 +1,62 @@
-/**
- * Custom hook untuk manage dashboard data
- */
 import { useEffect, useState } from 'react'
-import { getDashboardMetrics, getTrendData, getSentimentData, getTopIssues } from '../api/dataApi'
-import type { DashboardMetrics, TrendData, SentimentData, Issue } from '../types/index'
+import { getDashboardStats, getDashboardTrend } from '../api/dataApi'
+
+export interface DashboardStats {
+  total_content: number
+  crawled_today: number
+  active_keywords: number
+  isu_aktif: number
+  sentiment: {
+    positif: number
+    netral: number
+    negatif: number
+    total_labeled: number
+  }
+  latest_batch: {
+    batch_id: string
+    status: string
+    success_rate_pct: number
+    records_error: number
+    raw_data_count: number
+  } | null
+}
+
+export interface TrendPoint {
+  date: string
+  media: number
+  tiktok: number
+  youtube: number
+}
 
 export interface DashboardDataState {
-  metrics: DashboardMetrics | null
-  trends: TrendData[]
-  sentiment: SentimentData | null
-  issues: Issue[]
+  stats: DashboardStats | null
+  trend: TrendPoint[]
   loading: boolean
   error: string | null
 }
 
 export function useDashboardData() {
   const [state, setState] = useState<DashboardDataState>({
-    metrics: null,
-    trends: [],
-    sentiment: null,
-    issues: [],
+    stats: null,
+    trend: [],
     loading: true,
     error: null,
   })
 
   useEffect(() => {
-    const loadData = async () => {
+    const load = async () => {
       try {
-        setState(prev => ({ ...prev, loading: true, error: null }))
-        
-        const [metricsData, trendData, sentimentData, issuesData] = await Promise.all([
-          getDashboardMetrics(),
-          getTrendData(),
-          getSentimentData(),
-          getTopIssues(10),
+        const [stats, trend] = await Promise.all([
+          getDashboardStats(),
+          getDashboardTrend(),
         ])
-        
-        setState({
-          metrics: metricsData,
-          trends: trendData,
-          sentiment: sentimentData,
-          issues: issuesData,
-          loading: false,
-          error: null,
-        })
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Gagal memuat data'
-        setState(prev => ({ ...prev, loading: false, error: message }))
-        console.error('[useDashboardData] Error:', err)
+        setState({ stats, trend, loading: false, error: null })
+      } catch {
+        setState(prev => ({ ...prev, loading: false, error: 'Gagal memuat data dashboard' }))
       }
     }
 
-    loadData()
+    load()
   }, [])
 
   return state

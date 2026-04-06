@@ -13,6 +13,7 @@ import BriefPage from './pages/BriefPage'
 import RiwayatPage from './pages/RiwayatPage'
 import LabelingPage from './pages/LabelingPage'
 import CrawlingPage from './pages/CrawlingPage'
+import ChatbotPage from './pages/ChatbotPage'
 
 function PageContent() {
   const { page, chatKey } = useApp()
@@ -28,6 +29,7 @@ function PageContent() {
     riwayat: <RiwayatPage />,
     labeling: <LabelingPage />,
     crawling: <CrawlingPage />,
+    chatbot: <ChatbotPage />,
   }
   return <>{pages[page] ?? <DashboardPage />}</>
 }
