@@ -1,23 +1,9 @@
-from contextlib import asynccontextmanager
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers.tim2 import router as tim2_router
 from app.routers.tim3 import router as tim3_router
 from app.routers.orchestrator import router as orchestrator_router
 from app.routers.dashboard import router as dashboard_router
-
-from app.database import Base, engine
-from app.api.tasks_router import router as tasks_router
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Buat tabel milik backend (ingest_log, task_results) saat startup.
-    # Tabel milik crawler (raw_content, dll.) dikelola oleh Alembic-nya sendiri.
-    Base.metadata.create_all(bind=engine)
-    yield
-
 
 app = FastAPI(
     title="Tim 4 RAG + MVP Backend",
@@ -27,7 +13,6 @@ app = FastAPI(
         "API Tim 2 & Tim 3 untuk development paralel."
     ),
     version="0.2.0",
-    lifespan=lifespan,
 )
 
 # CORS harus didaftarkan SEBELUM router agar header terbawa ke semua endpoint
@@ -46,7 +31,6 @@ app.include_router(tim2_router)
 app.include_router(tim3_router)
 app.include_router(orchestrator_router)
 app.include_router(dashboard_router)
-app.include_router(tasks_router)
 
 
 @app.get("/health", tags=["System"])

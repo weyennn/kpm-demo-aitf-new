@@ -1,28 +1,19 @@
 fastapi==0.115.0
 uvicorn[standard]==0.30.6
 
-# Celery task queue + broker
 celery==5.4.0
-kombu==5.3.7
 redis==5.0.8
 
-# Celery monitoring dashboard
-flower==2.0.1
-
-# Database (sync driver untuk task Celery, async driver untuk route FastAPI)
 psycopg[binary]==3.2.1
 sqlalchemy==2.0.34
 
-# Penyimpanan vektor
 qdrant-client==1.11.1
 
-# Model embedding — multilingual, mendukung Bahasa Indonesia (~470MB pertama kali)
-sentence-transformers==3.3.1
-torch==2.5.1
-numpy==1.26.4
-
-# Utilitas
 python-dotenv==1.0.1
 pydantic==2.9.2
 httpx==0.27.2
-structlog==24.4.0
+
+# Embedding model (download ~470MB pertama kali)
+sentence-transformers==3.0.1
+
+
