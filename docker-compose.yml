@@ -3,9 +3,9 @@ services:
     image: postgres:16
     container_name: tim4_postgres
     environment:
-      POSTGRES_USER: team4
-      POSTGRES_PASSWORD: team4pass
-      POSTGRES_DB: team4db
+      POSTGRES_USER: tim4
+      POSTGRES_PASSWORD: tim4pass
+      POSTGRES_DB: tim4db
     ports:
       - "55432:5432"
     volumes:
