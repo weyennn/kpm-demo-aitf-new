@@ -1,4 +1,5 @@
 services:
+  # ── Infrastruktur ─────────────────────────────────────────────────────────
   postgres:
     image: postgres:16
     container_name: tim4_postgres
@@ -10,6 +11,11 @@ services:
       - "55432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tim4 -d tim4db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
 
   pgadmin:
@@ -21,7 +27,8 @@ services:
     ports:
       - "8080:80"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     volumes:
       - pgadmindata:/var/lib/pgadmin
     restart: unless-stopped
@@ -33,6 +40,11 @@ services:
       - "6333:6333"
     volumes:
       - qdrantdata:/qdrant/storage
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:6333/healthz || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
 
   redis:
@@ -40,8 +52,14 @@ services:
     container_name: tim4_redis
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
     restart: unless-stopped
 
+  # ── Layanan aplikasi ──────────────────────────────────────────────────────
   api:
     build:
       context: .
@@ -52,28 +70,102 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - postgres
-      - qdrant
-      - redis
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     working_dir: /app/backend
     command: >
       uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     restart: unless-stopped
 
-  worker:
+  # Worker: antrian high — kueri RAG (4 slot concurrent)
+  worker_high:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: tim4_worker
+    container_name: tim4_worker_high
     env_file:
       - .env
     depends_on:
-      - postgres
-      - qdrant
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
     working_dir: /app/backend
     command: >
-      celery -A app.celery_app.celery worker --loglevel=INFO
+      celery -A app.celery_app.celery worker
+             --queues=high
+             --concurrency=4
+             --loglevel=INFO
+             --hostname=worker_high@%h
+    restart: unless-stopped
+
+  # Worker: antrian ingest — embedding / upsert Qdrant (1 slot — CPU-bound)
+  worker_ingest:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tim4_worker_ingest
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+    working_dir: /app/backend
+    command: >
+      celery -A app.celery_app.celery worker
+             --queues=ingest
+             --concurrency=1
+             --loglevel=INFO
+             --hostname=worker_ingest@%h
+    restart: unless-stopped
+
+  # Beat: memicu task embed_pending_content terjadwal setiap 6 jam
+  beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tim4_beat
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_healthy
+    working_dir: /app/backend
+    command: >
+      celery -A app.celery_app.celery beat
+             --loglevel=INFO
+             --scheduler celery.beat:PersistentScheduler
+             -s /tmp/celerybeat-schedule
+    restart: unless-stopped
+
+  # Flower: dashboard monitoring Celery real-time
+  flower:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tim4_flower
+    env_file:
+      - .env
+    ports:
+      - "5555:5555"
+    depends_on:
+      redis:
+        condition: service_healthy
+    working_dir: /app/backend
+    command: >
+      celery -A app.celery_app.celery flower
+             --port=5555
+             --broker=${CELERY_BROKER_URL:-redis://redis:6379/0}
     restart: unless-stopped
 
 volumes:
