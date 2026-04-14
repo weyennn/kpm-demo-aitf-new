@@ -9,6 +9,12 @@ WORKDIR /app
 
 # Install deps first (better caching)
 COPY requirements.txt .
+
+# Uncomment baris di bawah jika ingin pakai sentence-transformers dengan GPU/CUDA:
+# RUN pip install --no-cache-dir \
+#     torch==2.3.1+cpu \
+#     --index-url https://download.pytorch.org/whl/cpu
+
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy source
