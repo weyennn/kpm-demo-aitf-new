@@ -38,6 +38,5 @@ import type { Page } from '../types'
 
 export const EARLY_WARNINGS: { color: string; dot: string; title: string; sub: string; btnLbl: string; btnCls: string; navKey: Page }[] = [
   { color: 'border-l-danger  bg-danger-dim',  dot: 'bg-danger',  title: 'Hoaks Vaksin — Lonjakan 340% dalam 2 jam',       sub: 'Vol: 4.821 · TikTok + WhatsApp · Menyebar cepat',  btnLbl: 'Buat Analisis', btnCls: 'bg-danger text-white',                               navKey: 'chat' },
-  // { color: 'border-l-warning bg-warning-dim', dot: 'bg-warning', title: 'Banjir Jabodetabek — Sentimen negatif meningkat', sub: 'Vol: 6.412 · Semua platform · Trending 4 jam',      btnLbl: 'Pantau',        btnCls: 'border border-warning text-warning bg-transparent', navKey: 'chat' },
-  // { color: 'border-l-success bg-success-dim', dot: 'bg-success', title: 'PP TUNAS — Momentum positif tinggi',              sub: 'Vol: 8.241 · Sentimen +71% · Peluang amplifikasi',  btnLbl: 'Amplifikasi',   btnCls: 'border border-success text-success bg-transparent', navKey: 'chat' },
+ 
 ]
