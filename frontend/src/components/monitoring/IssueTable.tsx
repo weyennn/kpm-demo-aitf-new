@@ -1,4 +1,4 @@
-import { TrendingUp, ChevronRight } from 'lucide-react'
+import { TrendingUp } from 'lucide-react'
 import Button from '../ui/Button'
 import { KAT_COLOR, type MonitoringIsu } from '../../data/monitoring'
 import { setSelectedIsu, ISU_DETAIL_MAP } from '../../store/isuStore'
@@ -6,11 +6,12 @@ import type { Page } from '../../types'
 
 interface Props {
   filtered: MonitoringIsu[]
+  loading: boolean
   onReset: () => void
   onNavigate: (page: Page) => void
 }
 
-export default function IssueTable({ filtered, onReset, onNavigate }: Props) {
+export default function IssueTable({ filtered, loading, onReset, onNavigate }: Props) {
   return (
     <div className="bg-white border border-border rounded-xl overflow-hidden">
       <div className="flex items-center justify-between px-5 py-3 border-b border-border">
@@ -23,6 +24,7 @@ export default function IssueTable({ filtered, onReset, onNavigate }: Props) {
         </div>
         <Button variant="ghost" size="sm">↓ Export CSV</Button>
       </div>
+
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-[13px]">
           <thead>
@@ -35,7 +37,17 @@ export default function IssueTable({ filtered, onReset, onNavigate }: Props) {
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 ? (
+            {loading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <tr key={i} className="border-b border-border">
+                  {Array.from({ length: 9 }).map((_, j) => (
+                    <td key={j} className="px-4 py-3">
+                      <div className="h-3 bg-surface animate-pulse rounded w-full" />
+                    </td>
+                  ))}
+                </tr>
+              ))
+            ) : filtered.length === 0 ? (
               <tr>
                 <td colSpan={9} className="px-4 py-10 text-center text-text-muted text-[13px]">
                   Tidak ada isu yang cocok ·{' '}
@@ -44,7 +56,9 @@ export default function IssueTable({ filtered, onReset, onNavigate }: Props) {
               </tr>
             ) : filtered.map(r => {
               const handleAnalysis = () => {
-                const found = ISU_DETAIL_MAP[r.nama] ?? Object.values(ISU_DETAIL_MAP).find(d => r.nama.toLowerCase().includes(d.nama.toLowerCase()))
+                const found = ISU_DETAIL_MAP[r.nama] ?? Object.values(ISU_DETAIL_MAP).find(d =>
+                  r.nama.toLowerCase().includes(d.nama.toLowerCase())
+                )
                 setSelectedIsu(found ?? null)
                 onNavigate('chat')
               }
@@ -74,9 +88,16 @@ export default function IssueTable({ filtered, onReset, onNavigate }: Props) {
                   </td>
                   <td className="px-4 py-3 font-mono text-[12px] font-semibold text-text-main">{r.vol.toLocaleString()}</td>
                   <td className="px-4 py-3">
-                    <span className={`text-[11px] font-mono font-semibold px-2 py-0.5 rounded ${
-                      r.sent === 'positif' ? 'bg-success-dim text-success' : 'bg-danger-dim text-danger'
-                    }`}>{r.sentPct}</span>
+                    <div className="flex flex-col gap-0.5">
+                      <span className={`text-[11px] font-mono font-semibold px-2 py-0.5 rounded ${
+                        r.sent === 'positif' ? 'bg-success-dim text-success'
+                        : r.sent === 'negatif' ? 'bg-danger-dim text-danger'
+                        : 'bg-surface text-text-muted border border-border'
+                      }`}>
+                        {r.sent.charAt(0).toUpperCase() + r.sent.slice(1)}
+                      </span>
+                      <span className="text-[10px] font-mono text-text-muted pl-0.5">{r.sentPct}</span>
+                    </div>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-1 flex-wrap">
@@ -90,7 +111,7 @@ export default function IssueTable({ filtered, onReset, onNavigate }: Props) {
                   </td>
                   <td className="px-4 py-3">
                     <Button variant="ghost" size="sm" onClick={e => { e.stopPropagation(); handleAnalysis() }}>
-                      Analisis <ChevronRight size={11} />
+                      Analisis <TrendingUp size={11} />
                     </Button>
                   </td>
                 </tr>

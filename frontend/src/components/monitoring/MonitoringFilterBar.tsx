@@ -6,6 +6,7 @@ interface Props {
   katFilter: string
   sentFilter: string
   activeTag: string
+  categories: string[]
   onSearch: (v: string) => void
   onKat: (v: string) => void
   onSent: (v: string) => void
@@ -14,6 +15,7 @@ interface Props {
 
 export default function MonitoringFilterBar({
   search, katFilter, sentFilter, activeTag,
+  categories,
   onSearch, onKat, onSent, onReset,
 }: Props) {
   const hasFilter = !!(search || katFilter || sentFilter || activeTag)
@@ -35,7 +37,7 @@ export default function MonitoringFilterBar({
         onChange={e => onKat(e.target.value)}
       >
         <option value="">Semua Kategori</option>
-        {['Digital', 'Bencana', 'Kesehatan', 'Sosial'].map(k => <option key={k}>{k}</option>)}
+        {categories.map(k => <option key={k}>{k}</option>)}
       </select>
       <select
         className="bg-white border border-border rounded-lg px-3 py-2 text-[12px] text-text-muted outline-none"

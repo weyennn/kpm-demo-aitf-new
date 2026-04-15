@@ -53,9 +53,9 @@ async def get_stats():
                 "active_keywords": active_keywords,
                 "isu_aktif":       0,
                 "sentiment": {
-                    "positif":       positif,
-                    "negatif":       negatif,
-                    "netral":        netral,
+                    "positif":       round(positif / total_labeled * 100, 1) if total_labeled else 0,
+                    "negatif":       round(negatif / total_labeled * 100, 1) if total_labeled else 0,
+                    "netral":        round(netral  / total_labeled * 100, 1) if total_labeled else 0,
                     "total_labeled": total_labeled,
                 },
                 "latest_batch": {

@@ -58,11 +58,27 @@ export async function getDashboardTrend() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// MONITORING
+// MONITORING (real API)
 // ─────────────────────────────────────────────────────────────────────────────
 
 export async function getMonitoringData(): Promise<MonitoringData> {
   return getDummyMonitoringData()
+}
+
+export async function getMonitoringStats() {
+  try {
+    return await get<any>('/v1/monitoring/stats')
+  } catch {
+    return null
+  }
+}
+
+export async function getMonitoringIssuesList() {
+  try {
+    return await get<any[]>('/v1/monitoring/issues')
+  } catch {
+    return []
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

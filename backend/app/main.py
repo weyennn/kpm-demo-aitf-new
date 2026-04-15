@@ -4,6 +4,7 @@ from app.routers.tim2 import router as tim2_router
 from app.routers.tim3 import router as tim3_router
 from app.routers.orchestrator import router as orchestrator_router
 from app.routers.dashboard import router as dashboard_router
+from app.routers.monitoring import router as monitoring_router
 
 app = FastAPI(
     title="Tim 4 RAG + MVP Backend",
@@ -31,6 +32,7 @@ app.include_router(tim2_router)
 app.include_router(tim3_router)
 app.include_router(orchestrator_router)
 app.include_router(dashboard_router)
+app.include_router(monitoring_router)
 
 
 @app.get("/health", tags=["System"])
