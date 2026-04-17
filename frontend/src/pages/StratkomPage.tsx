@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import ReactMarkdown from 'react-markdown'
 import {
   Upload, Wand2, Target, Newspaper, Smartphone, Pin,
   ExternalLink, AlertCircle, FileDown,
@@ -105,9 +106,9 @@ export default function StratkomPage() {
           {/* Strategi Utama */}
           <div className="bg-white border border-border rounded-xl p-5">
             <div className="text-[10.5px] font-mono uppercase tracking-widest text-text-muted mb-3">Strategi Utama</div>
-            <p className="text-[13.5px] leading-relaxed text-text-main">
-              <strong className="text-primary">{stratkom.strategi}.</strong>
-            </p>
+            <div className="prose prose-sm max-w-none text-text-main text-[13.5px] leading-relaxed">
+              <ReactMarkdown>{stratkom.strategi}</ReactMarkdown>
+            </div>
           </div>
 
           {/* Pesan Utama */}

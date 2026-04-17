@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import ReactMarkdown from 'react-markdown'
 import {
   Upload, FileDown, Zap, Calendar, Clock, BarChart2,
   Target, ClipboardList, FileText, ExternalLink, AlertCircle,
@@ -98,7 +99,9 @@ export default function NarasiPage() {
             <div className="text-[9.5px] font-mono uppercase tracking-widest text-text-muted mb-3 border-l-[3px] border-primary pl-2">
               Ringkasan Isu
             </div>
-            <p className="text-[13.5px] leading-relaxed text-text-main">{narasi.narasi}</p>
+            <div className="prose prose-sm max-w-none text-text-main text-[13.5px] leading-relaxed">
+              <ReactMarkdown>{narasi.narasi}</ReactMarkdown>
+            </div>
           </div>
 
           {/* Poin Kunci */}

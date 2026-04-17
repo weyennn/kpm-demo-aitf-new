@@ -63,7 +63,12 @@ export async function revise(req: ReviseRequest, queryHint = ''): Promise<Revise
 
 export async function exportContent(req: ExportContentRequest): Promise<ExportContentResponse> {
   if (USE_DUMMY) return dummyExportContent(req.session_id, req.content_type, req.format)
-  return post<ExportContentResponse>('/v1/workflow/export', req)
+  const res = await post<ExportContentResponse>('/v1/workflow/export', req)
+  // Prepend BASE_URL agar link download mengarah ke backend, bukan frontend
+  if (res.export_url && !res.export_url.startsWith('http')) {
+    res.export_url = `${BASE_URL}${res.export_url}`
+  }
+  return res
 }
 
 /** Generate session ID unik */
