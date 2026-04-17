@@ -17,6 +17,7 @@ import uuid
 import json
 import logging
 import httpx
+import os
 from collections import OrderedDict
 
 from app.services.qdrant_service import search_filtered
@@ -32,19 +33,51 @@ from app.core.settings import (
     TIM3_BASE_URL,
     TIM3_API_KEY,
     TIM3_MODEL_ID,
+    CELERY_BROKER_URL,
 )
 
 logger = logging.getLogger(__name__)
 
 _SESSION_CACHE: OrderedDict[str, dict] = OrderedDict()
 _MAX_SESSIONS = 100
+_SESSION_TTL   = 3600  # 1 jam
+
+_redis_client = None
+
+def _get_redis():
+    global _redis_client
+    if _redis_client is not None:
+        return _redis_client
+    try:
+        import redis
+        _redis_client = redis.from_url(CELERY_BROKER_URL, decode_responses=True)
+        _redis_client.ping()
+        return _redis_client
+    except Exception as e:
+        logger.warning(f"Redis tidak tersedia, pakai in-memory cache: {e}")
+        return None
 
 
 def get_session(session_id: str) -> dict | None:
+    r = _get_redis()
+    if r:
+        try:
+            raw = r.get(f"session:{session_id}")
+            if raw:
+                return json.loads(raw)
+        except Exception as e:
+            logger.warning(f"Redis get_session gagal: {e}")
     return _SESSION_CACHE.get(session_id)
 
 
 def _save_session(session_id: str, data: dict) -> None:
+    r = _get_redis()
+    if r:
+        try:
+            r.setex(f"session:{session_id}", _SESSION_TTL, json.dumps(data))
+            return
+        except Exception as e:
+            logger.warning(f"Redis save_session gagal: {e}")
     _SESSION_CACHE[session_id] = data
     if len(_SESSION_CACHE) > _MAX_SESSIONS:
         _SESSION_CACHE.popitem(last=False)
