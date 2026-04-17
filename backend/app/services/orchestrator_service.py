@@ -62,9 +62,11 @@ def get_session(session_id: str) -> dict | None:
 
 
 def _save_session(session_id: str, data: dict) -> None:
+    url = _db_url()
+    logger.info(f"[session] save {session_id} ke DB (url prefix: {url[:30]}...)")
     try:
         import psycopg
-        with psycopg.connect(_db_url()) as conn:
+        with psycopg.connect(url) as conn:
             conn.execute(
                 """
                 INSERT INTO pipeline_sessions (session_id, data, expires_at)
@@ -75,9 +77,10 @@ def _save_session(session_id: str, data: dict) -> None:
                 [session_id, json.dumps(data)],
             )
             conn.commit()
-            return
+        logger.info(f"[session] save {session_id} OK")
+        return
     except Exception as e:
-        logger.warning(f"DB save_session gagal, pakai cache: {e}")
+        logger.error(f"[session] DB save_session gagal: {e}")
     _SESSION_CACHE[session_id] = data
     if len(_SESSION_CACHE) > _MAX_SESSIONS:
         _SESSION_CACHE.popitem(last=False)
