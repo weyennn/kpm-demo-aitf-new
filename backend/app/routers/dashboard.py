@@ -44,17 +44,24 @@ async def get_stats():
                 LIMIT 1
             """)).fetchone()
 
-            # Keyword aktif
+            # Keyword aktif & isu aktif (keyword yg punya konten)
             kw_row = await (await conn.execute("""
-                SELECT COUNT(*) FROM keyword_corpus WHERE is_active = true
+                SELECT
+                    COUNT(*) AS total_active,
+                    COUNT(*) FILTER (WHERE EXISTS (
+                        SELECT 1 FROM raw_content rc
+                        WHERE rc.keyword_refs @> ARRAY[kc.keyword_text::varchar]
+                    )) AS with_content
+                FROM keyword_corpus kc WHERE is_active = true
             """)).fetchone()
             active_keywords = kw_row[0] if kw_row else 0
+            isu_aktif       = kw_row[1] if kw_row else 0
 
             return {
                 "total_content":   total,
                 "crawled_today":   crawled_today,
                 "active_keywords": active_keywords,
-                "isu_aktif":       0,
+                "isu_aktif":       isu_aktif,
                 "sentiment": {
                     "positif":       round(positif / total_labeled * 100, 1) if total_labeled else 0,
                     "negatif":       round(negatif / total_labeled * 100, 1) if total_labeled else 0,
