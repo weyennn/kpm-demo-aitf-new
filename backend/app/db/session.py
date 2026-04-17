@@ -1,17 +1,9 @@
-import os
 from contextlib import asynccontextmanager
 import psycopg
-from dotenv import load_dotenv
+from app.core.settings import DATABASE_URL as _SETTINGS_URL
 
-load_dotenv()
-
-# Konversi dari format asyncpg ke psycopg (ganti +asyncpg)
-_raw = os.getenv("DATABASE_URL", "postgresql://team4:team4pass@127.0.0.1:55432/team4db")
-DATABASE_URL = (
-    _raw
-    .replace("postgresql+asyncpg://", "postgresql://")
-    .replace("postgresql+psycopg://", "postgresql://")
-)
+# psycopg pakai format postgresql:// bukan postgresql+psycopg://
+DATABASE_URL = _SETTINGS_URL.replace("postgresql+psycopg://", "postgresql://")
 
 
 @asynccontextmanager

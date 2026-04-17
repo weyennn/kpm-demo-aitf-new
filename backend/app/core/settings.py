@@ -17,10 +17,21 @@ POSTGRES_DB       = os.getenv("POSTGRES_DB", "tim4db")
 POSTGRES_USER     = os.getenv("POSTGRES_USER", "tim4")
 POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "tim4pass")
 
-DATABASE_URL = (
-    f"postgresql+psycopg://{POSTGRES_USER}:{POSTGRES_PASSWORD}"
-    f"@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
-)
+# Prioritaskan DATABASE_URL dari env (Railway/Supabase inject langsung)
+# Fallback ke build dari POSTGRES_* vars
+_db_url = os.getenv("DATABASE_URL")
+if _db_url:
+    # Normalisasi ke format psycopg
+    DATABASE_URL = (
+        _db_url
+        .replace("postgresql+asyncpg://", "postgresql+psycopg://")
+        .replace("postgresql://", "postgresql+psycopg://")
+    )
+else:
+    DATABASE_URL = (
+        f"postgresql+psycopg://{POSTGRES_USER}:{POSTGRES_PASSWORD}"
+        f"@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
+    )
 
 # ── Redis / Celery ───────────────────────────────────────────────────────────
 REDIS_HOST            = os.getenv("REDIS_HOST", "localhost")
