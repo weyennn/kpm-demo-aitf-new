@@ -122,6 +122,8 @@ def _openrouter_chat(messages: list[dict], model: str, max_tokens: int = 1000) -
     from app.core.settings import GEMINI_API_KEY, GEMINI_BASE_URL
     api_key  = GEMINI_API_KEY or OPENROUTER_API_KEY
     base_url = GEMINI_BASE_URL if GEMINI_API_KEY else OPENROUTER_BASE_URL
+    if not api_key:
+        raise ValueError("Tidak ada API key (GEMINI_API_KEY belum diset)")
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
