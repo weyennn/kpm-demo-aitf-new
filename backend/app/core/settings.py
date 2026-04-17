@@ -55,8 +55,8 @@ TIM3_MODEL_ID  = os.getenv("TIM3_MODEL_ID", "team3-comm-strategy-sft-v1")
 # ── Gemini (default LLM, ganti OpenRouter) ──────────────────────────────────
 GEMINI_API_KEY    = os.getenv("GEMINI_API_KEY", "")
 GEMINI_BASE_URL   = os.getenv("GEMINI_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai")
-GEMINI_MODEL_TIM2 = os.getenv("GEMINI_MODEL_TIM2", "gemini-1.5-flash")
-GEMINI_MODEL_TIM3 = os.getenv("GEMINI_MODEL_TIM3", "gemini-1.5-flash")
+GEMINI_MODEL_TIM2 = os.getenv("GEMINI_MODEL_TIM2", "gemini-2.0-flash-lite")
+GEMINI_MODEL_TIM3 = os.getenv("GEMINI_MODEL_TIM3", "gemini-2.0-flash-lite")
 
 # Backward-compat alias (kode lama yang masih pakai OPENROUTER_*)
 OPENROUTER_API_KEY    = os.getenv("OPENROUTER_API_KEY", GEMINI_API_KEY)

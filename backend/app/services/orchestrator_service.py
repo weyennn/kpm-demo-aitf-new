@@ -143,7 +143,7 @@ def _gemini_chat(messages: list[dict], model: str, max_tokens: int = 1000) -> st
         payload["systemInstruction"] = {"parts": system_parts}
 
     url = (
-        f"https://generativelanguage.googleapis.com/v1beta/models/"
+        f"https://generativelanguage.googleapis.com/v1/models/"
         f"{model}:generateContent"
     )
     with httpx.Client(timeout=60) as client:
