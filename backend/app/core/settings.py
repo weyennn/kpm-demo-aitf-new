@@ -55,8 +55,8 @@ TIM3_MODEL_ID  = os.getenv("TIM3_MODEL_ID", "team3-comm-strategy-sft-v1")
 # ── Groq (default LLM, free tier) ───────────────────────────────────────────
 GROQ_API_KEY    = os.getenv("GROQ_API_KEY", "")
 GROQ_BASE_URL   = os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1")
-GROQ_MODEL_TIM2 = os.getenv("GROQ_MODEL_TIM2", "llama-3.1-8b-instant")
-GROQ_MODEL_TIM3 = os.getenv("GROQ_MODEL_TIM3", "llama-3.1-8b-instant")
+GROQ_MODEL_TIM2 = os.getenv("GROQ_MODEL_TIM2", "llama3-8b-8192")
+GROQ_MODEL_TIM3 = os.getenv("GROQ_MODEL_TIM3", "llama3-8b-8192")
 
 # Backward-compat alias
 GEMINI_API_KEY        = os.getenv("GEMINI_API_KEY", "")

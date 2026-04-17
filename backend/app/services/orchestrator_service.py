@@ -153,7 +153,7 @@ def _openrouter_chat(messages: list[dict], model: str, max_tokens: int = 1000) -
         return resp.json()["choices"][0]["message"]["content"]
 
 
-def _call_tim2_openrouter(prompt: str, chunks: list[dict], max_tokens: int = 800) -> dict:
+def _call_tim2_openrouter(prompt: str, chunks: list[dict], max_tokens: int = 400) -> dict:
     context_text = "\n\n".join(
         f"[Chunk {i+1}] {c['text']}" for i, c in enumerate(chunks[:5])
     ) if chunks else "Tidak ada konteks tambahan."
@@ -227,7 +227,7 @@ def _call_tim3_openrouter(narasi: str, meta: dict, channel: str = "press") -> di
             ),
         },
     ]
-    stratkom = _openrouter_chat(messages, OPENROUTER_MODEL_TIM3, max_tokens=1500)
+    stratkom = _openrouter_chat(messages, OPENROUTER_MODEL_TIM3, max_tokens=600)
     return {"stratkom": stratkom, "citations": {"regulations": [], "press_statements": []}}
 
 
