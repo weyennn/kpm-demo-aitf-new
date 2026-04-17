@@ -22,7 +22,31 @@ Prototipe MVP frontend untuk proyek AITF, dibangun dengan React, TypeScript, Vit
 2. Tambahkan font Samsung Sans ke `src/assets/fonts/SamsungSans-Regular.woff2`
    (font tidak disertakan karena alasan lisensi — unduh sendiri dan letakkan di folder tersebut).
 
-3. Jalankan dev server:
+3. Buat file `.env` di folder `frontend/`:
+
+   #### Development
+
+   ```env
+   # Kosongkan VITE_API_URL → Vite proxy otomatis arahkan ke localhost:8000
+   VITE_API_URL=
+   # URL langsung ke crawler service (Tim 1)
+   VITE_CRAWLER_API_URL=http://localhost:8000
+   VITE_DEBUG=false
+   ```
+
+   > Vite proxy dikonfigurasi di `vite.config.ts` — request ke `/api/*` diteruskan ke `http://localhost:8000`.
+
+   #### Production
+
+   ```env
+   # Isi dengan URL backend production
+   VITE_API_URL=https://<DOMAIN_BACKEND>
+   # URL crawler service production
+   VITE_CRAWLER_API_URL=https://<DOMAIN_CRAWLER>
+   VITE_DEBUG=false
+   ```
+
+4. Jalankan dev server:
 
    ```bash
    npm run dev

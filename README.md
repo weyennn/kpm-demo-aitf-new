@@ -75,16 +75,18 @@ cd kpm
 
 ### 2. Buat file `.env`
 
-Buat file `.env` di folder `kpm/`:
+Buat file `.env` di folder `kpm/` berdasarkan mode yang digunakan:
+
+#### Development (default)
 
 ```env
-# Database
-# Postgres
+# Postgres — sesuai docker-compose.yml
 POSTGRES_HOST=postgres
 POSTGRES_PORT=5432
 POSTGRES_DB=tim4db
 POSTGRES_USER=tim4
 POSTGRES_PASSWORD=tim4pass
+DATABASE_URL=postgresql://tim4:tim4pass@postgres:5432/tim4db
 
 # Redis / Celery
 REDIS_HOST=redis
@@ -95,15 +97,53 @@ CELERY_RESULT_BACKEND=redis://redis:6379/1
 # Qdrant
 QDRANT_URL=http://qdrant:6333
 
-# External model endpoints (Tim 2 / Tim 3) - can be mock first
+# External model endpoints (Tim 2 / Tim 3)
 TIM2_ANALYZE_ISSUE_URL=http://host.docker.internal:9002/api/v1/analyze-issue
 TIM3_STRATKOM_URL=http://host.docker.internal:9003/api/v1/generate-stratkom
 
-# Fallback toggle (example)
+# Fallback toggle
 ENABLE_FALLBACK_LLM=true
+
+# App
+APP_ENV=development
+APP_URL=http://localhost:3000
+APP_TITLE=KPM AITF Platform
+```
+
+#### Production
+
+Ubah bagian berikut untuk production:
+
+```env
+# Postgres — gunakan host server production, bukan nama service docker
+POSTGRES_HOST=<IP_ATAU_HOSTNAME_DB>
+POSTGRES_PORT=5432
+POSTGRES_DB=tim4db
+POSTGRES_USER=tim4
+POSTGRES_PASSWORD=<PASSWORD_KUAT>
+DATABASE_URL=postgresql://tim4:<PASSWORD_KUAT>@<IP_ATAU_HOSTNAME_DB>:5432/tim4db
+
+# Redis — host production
+REDIS_HOST=<IP_ATAU_HOSTNAME_REDIS>
+CELERY_BROKER_URL=redis://<IP_ATAU_HOSTNAME_REDIS>:6379/0
+CELERY_RESULT_BACKEND=redis://<IP_ATAU_HOSTNAME_REDIS>:6379/1
+
+# Qdrant — host production
+QDRANT_URL=http://<IP_ATAU_HOSTNAME_QDRANT>:6333
+
+# External model endpoints — URL production Tim 2 & Tim 3
+TIM2_ANALYZE_ISSUE_URL=http://<HOST_TIM2>/api/v1/analyze-issue
+TIM3_STRATKOM_URL=http://<HOST_TIM3>/api/v1/generate-stratkom
+
+# App
+APP_ENV=production
+APP_URL=https://<DOMAIN_PRODUCTION>
+APP_TITLE=KPM AITF Platform
 ```
 
 > **`MODEL_MODE=mock`** — selama model Tim 2 & Tim 3 belum siap, biarkan di `mock`. Tim 4 akan otomatis fallback ke GPT-4o. Ganti ke `custom` saat model siap, tanpa perlu ubah kode (ADR-001).
+
+> **Keamanan:** Jangan pernah commit file `.env` ke repository. Gunakan secret manager atau environment variable CI/CD untuk production.
 
 ### 3. Jalankan backend
 

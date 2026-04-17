@@ -59,7 +59,49 @@ playwright install chromium
 
 ```bash
 cp .env.example .env
-# Edit .env dengan DATABASE_URL Supabase dan session cookies
+```
+
+Edit `.env` sesuai mode yang digunakan:
+
+#### Development
+
+```env
+# Database — PostgreSQL lokal via port mapping docker-compose (55432)
+DATABASE_URL=postgresql+asyncpg://tim4:tim4pass@127.0.0.1:55432/tim4db
+
+# Supabase Storage
+SUPABASE_URL=https://<PROJECT>.supabase.co
+SUPABASE_SERVICE_KEY=<SERVICE_KEY>
+SUPABASE_BUCKET=datalake
+
+# App
+APP_ENV=development
+LOG_LEVEL=INFO
+APP_PORT=8000
+TIMEZONE=Asia/Jakarta
+```
+
+> Port `55432` adalah host-mapped port dari container `tim4_postgres` (lihat `docker-compose.yml`).
+
+#### Production
+
+```env
+# Database — gunakan host server production
+DATABASE_URL=postgresql+asyncpg://tim4:<PASSWORD_KUAT>@<IP_ATAU_HOSTNAME_DB>:5432/tim4db
+
+# Supabase Storage — sama, tapi gunakan service key production
+SUPABASE_URL=https://<PROJECT>.supabase.co
+SUPABASE_SERVICE_KEY=<SERVICE_KEY_PRODUCTION>
+SUPABASE_BUCKET=datalake
+
+# Apify (TikTok & YouTube Shorts)
+# APIFY_API_TOKEN=apify_api_xxxxxxxxxx
+
+# App
+APP_ENV=production
+LOG_LEVEL=WARNING
+APP_PORT=8000
+TIMEZONE=Asia/Jakarta
 ```
 
 ### 3. Inisialisasi database
