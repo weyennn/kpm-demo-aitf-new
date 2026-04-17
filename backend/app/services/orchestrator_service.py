@@ -119,11 +119,12 @@ def extract_key_points(stratkom: str) -> list[str]:
 # ---------------------------------------------------------------------------
 
 def _openrouter_chat(messages: list[dict], model: str, max_tokens: int = 1000) -> str:
+    from app.core.settings import GEMINI_API_KEY, GEMINI_BASE_URL
+    api_key  = GEMINI_API_KEY or OPENROUTER_API_KEY
+    base_url = GEMINI_BASE_URL if GEMINI_API_KEY else OPENROUTER_BASE_URL
     headers = {
-        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+        "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
-        "HTTP-Referer": "https://kpm.local",
-        "X-Title": "KPM Tim 4",
     }
     payload = {
         "model": model,
@@ -132,7 +133,7 @@ def _openrouter_chat(messages: list[dict], model: str, max_tokens: int = 1000) -
     }
     with httpx.Client(timeout=60) as client:
         resp = client.post(
-            f"{OPENROUTER_BASE_URL}/chat/completions",
+            f"{base_url}/chat/completions",
             headers=headers,
             json=payload,
         )
