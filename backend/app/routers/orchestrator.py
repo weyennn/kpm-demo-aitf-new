@@ -49,16 +49,17 @@ def analyze(req: AnalyzeRequest):
         issue_category=req.issue_category,
         sentiment=req.sentiment,
         region=req.region,
+        session_id=req.session_id,
     )
 
 
 @router.post("/generate-stratkom", summary="Generate strategi komunikasi")
 def generate_stratkom(req: GenerateStratkomRequest):
-    # Jalankan pipeline dengan issue_summary sebagai prompt
     return run_pipeline(
         prompt=req.issue_summary or "Generate strategi komunikasi",
         context=[],
         top_k=3,
+        session_id=req.session_id,
     )
 
 
@@ -68,6 +69,7 @@ def revise(req: ReviseRequest):
         prompt=req.user_edits or "Revisi strategi komunikasi",
         context=[],
         top_k=3,
+        session_id=req.session_id,
     )
 
 
