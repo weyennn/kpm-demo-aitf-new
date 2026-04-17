@@ -139,6 +139,8 @@ def _openrouter_chat(messages: list[dict], model: str, max_tokens: int = 1000) -
             headers=headers,
             json=payload,
         )
+        if not resp.is_success:
+            logger.error(f"LLM API error {resp.status_code}: {resp.text[:500]}")
         resp.raise_for_status()
         return resp.json()["choices"][0]["message"]["content"]
 
