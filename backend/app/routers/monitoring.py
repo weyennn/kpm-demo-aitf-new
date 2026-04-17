@@ -77,7 +77,10 @@ async def get_monitoring_stats():
             await cur.execute("""
                 SELECT kc.keyword_text, COUNT(rc.content_id) AS vol
                 FROM keyword_corpus kc
-                LEFT JOIN raw_content rc ON rc.keyword_refs @> ARRAY[kc.keyword_id]
+                LEFT JOIN raw_content rc ON (
+                    rc.keyword_refs @> ARRAY[kc.keyword_id::varchar]
+                    OR rc.keyword_refs @> ARRAY[kc.keyword_text::varchar]
+                )
                 WHERE kc.is_active = true
                 GROUP BY kc.keyword_id, kc.keyword_text
                 ORDER BY vol DESC
