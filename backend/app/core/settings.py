@@ -31,17 +31,23 @@ CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", f"redis://{REDIS_HOST
 # ── Qdrant ──────────────────────────────────────────────────────────────────
 QDRANT_URL = os.getenv("QDRANT_URL", "http://qdrant:6333")
 
-# ── External AI Services ────────────────────────────────────────────────────
-# Saat mock: arahkan ke endpoint /mock/v1/tim2 dan /mock/v1/tim3 di server ini sendiri
-TIM2_BASE_URL  = os.getenv("TIM2_API_URL",  "http://localhost:8000/mock/v1/tim2")
-TIM2_API_KEY   = os.getenv("TIM2_API_KEY",  "mock-key-tim2")
+# ── External AI Services (Tim 2 & Tim 3 real API) ───────────────────────────
+TIM2_BASE_URL  = os.getenv("TIM2_API_URL",  "")
+TIM2_API_KEY   = os.getenv("TIM2_API_KEY",  "")
 TIM2_MODEL_ID  = os.getenv("TIM2_MODEL_ID", "indo-sft-v1")
 
-TIM3_BASE_URL  = os.getenv("TIM3_API_URL",  "http://localhost:8000/mock/v1/tim3")
-TIM3_API_KEY   = os.getenv("TIM3_API_KEY",  "mock-key-tim3")
+TIM3_BASE_URL  = os.getenv("TIM3_API_URL",  "")
+TIM3_API_KEY   = os.getenv("TIM3_API_KEY",  "")
 TIM3_MODEL_ID  = os.getenv("TIM3_MODEL_ID", "team3-comm-strategy-sft-v1")
+
+# ── OpenRouter (fallback saat Tim 2/Tim 3 belum siap) ───────────────────────
+OPENROUTER_API_KEY    = os.getenv("OPENROUTER_API_KEY", "")
+OPENROUTER_BASE_URL   = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+OPENROUTER_MODEL_TIM2 = os.getenv("OPENROUTER_MODEL_TIM2", "qwen/qwen-2.5-72b-instruct")
+OPENROUTER_MODEL_TIM3 = os.getenv("OPENROUTER_MODEL_TIM3", "qwen/qwen-2.5-72b-instruct")
 
 # ── App ─────────────────────────────────────────────────────────────────────
 APP_ENV     = os.getenv("APP_ENV", "development")
-MODEL_MODE  = os.getenv("MODEL_MODE", "mock")   # "mock" | "custom"
+# "mock" | "openrouter" | "custom" (Tim 2/Tim 3 real)
+MODEL_MODE  = os.getenv("MODEL_MODE", "openrouter")
 DEBUG       = os.getenv("DEBUG", "false").lower() == "true"

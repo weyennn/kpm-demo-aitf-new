@@ -4,9 +4,12 @@ Mengambil data real dari PostgreSQL (Tim 1):
   - GET /v1/dashboard/stats  → total konten, crawled hari ini, sentimen, batch terakhir
   - GET /v1/dashboard/trend  → tren konten per platform 7 hari terakhir
 """
+import logging
 from datetime import date, timedelta
 from fastapi import APIRouter
 from app.db.session import get_conn
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/v1/dashboard", tags=["Dashboard"])
 
@@ -67,7 +70,7 @@ async def get_stats():
                 } if batch else None,
             }
     except Exception as e:
-        print(f"[dashboard/stats] DB error: {e}")
+        logger.error(f"[dashboard/stats] DB error: {e}")
         return _dummy_stats()
 
 
@@ -99,7 +102,7 @@ async def get_trend():
                 ]
             }
     except Exception as e:
-        print(f"[dashboard/trend] DB error: {e}")
+        logger.error(f"[dashboard/trend] DB error: {e}")
         return {"data": _dummy_trend()}
 
 

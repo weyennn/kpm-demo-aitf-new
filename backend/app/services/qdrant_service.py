@@ -75,7 +75,7 @@ def setup_collection(recreate: bool = False):
         )
 
     logger.info(f"Collection '{COLLECTION_NAME}' berhasil dibuat (dim={EMBEDDING_DIM}).")
-    print(f"Collection '{COLLECTION_NAME}' siap.")
+    logger.info(f"Collection '{COLLECTION_NAME}' siap.")
 
 
 # ---------------------------------------------------------------------------

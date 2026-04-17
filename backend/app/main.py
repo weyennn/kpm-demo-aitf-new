@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.core.settings import MODEL_MODE
 from app.routers.tim2 import router as tim2_router
 from app.routers.tim3 import router as tim3_router
 from app.routers.orchestrator import router as orchestrator_router
@@ -37,4 +38,4 @@ app.include_router(monitoring_router)
 
 @app.get("/health", tags=["System"])
 def health():
-    return {"status": "ok", "version": "0.2.0", "mode": "mock"}
+    return {"status": "ok", "version": "0.2.0", "mode": MODEL_MODE}

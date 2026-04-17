@@ -6,9 +6,11 @@ Monitoring API — data real dari PostgreSQL untuk halaman Monitoring Isu.
   GET /v1/monitoring/issues  → daftar isu aktif per keyword
 """
 
+import logging
 from fastapi import APIRouter
 from app.db.session import get_conn
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/v1/monitoring", tags=["Monitoring"])
 
 # Mapping nama panjang taxonomy → label pendek untuk frontend
@@ -135,7 +137,7 @@ async def get_monitoring_stats():
             }
 
     except Exception as e:
-        print(f"[monitoring/stats] DB error: {e}")
+        logger.error(f"[monitoring/stats] DB error: {e}")
         return _dummy_stats()
 
 
@@ -253,7 +255,7 @@ async def get_monitoring_issues():
             return issues
 
     except Exception as e:
-        print(f"[monitoring/issues] DB error: {e}")
+        logger.error(f"[monitoring/issues] DB error: {e}")
         return []
 
 

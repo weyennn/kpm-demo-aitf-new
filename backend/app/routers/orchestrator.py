@@ -1,8 +1,14 @@
-from fastapi import APIRouter, Query
+import io
+import logging
+from fastapi import APIRouter, Query, HTTPException
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import Optional
-from app.services.orchestrator_service import run_pipeline
+from app.services.orchestrator_service import run_pipeline, get_session
 from app.services.qdrant_service import search_filtered, collection_info
+from app.services.export_service import generate_pdf, generate_docx
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/v1/workflow", tags=["Orchestrator"])
 
@@ -67,14 +73,61 @@ def revise(req: ReviseRequest):
 
 @router.post("/export", summary="Export hasil ke PDF/DOCX")
 def export_content(req: ExportRequest):
-    # Placeholder — export engine belum diimplementasi
+    session = get_session(req.session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session tidak ditemukan. Jalankan analisis terlebih dahulu.")
+
+    fmt = (req.format or "pdf").lower()
+    if fmt not in ("pdf", "docx"):
+        raise HTTPException(status_code=400, detail="Format tidak didukung. Gunakan 'pdf' atau 'docx'.")
+
+    content_type = (req.content_type or "stratkom").lower()
+    if content_type not in ("narasi", "stratkom", "draft"):
+        raise HTTPException(status_code=400, detail="content_type harus 'narasi', 'stratkom', atau 'draft'.")
+
+    download_url = f"/v1/workflow/download/{req.session_id}/{content_type}.{fmt}"
     return {
+        "status"      : "success",
         "session_id"  : req.session_id,
-        "format"      : req.format,
-        "status"      : "ok",
-        "download_url": f"/v1/workflow/download/{req.session_id}.{req.format}",
-        "message"     : "Export engine dalam pengembangan.",
+        "content_type": content_type,
+        "format"      : fmt,
+        "export_url"  : download_url,
+        "message"     : None,
     }
+
+
+@router.get("/download/{session_id}/{filename}", summary="Download file PDF/DOCX")
+def download_file(session_id: str, filename: str):
+    session = get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session tidak ditemukan atau sudah kedaluwarsa.")
+
+    parts = filename.rsplit(".", 1)
+    if len(parts) != 2:
+        raise HTTPException(status_code=400, detail="Nama file tidak valid.")
+
+    content_type, fmt = parts[0], parts[1].lower()
+    if fmt not in ("pdf", "docx"):
+        raise HTTPException(status_code=400, detail="Format tidak didukung.")
+    if content_type not in ("narasi", "stratkom", "draft"):
+        raise HTTPException(status_code=400, detail="Tipe konten tidak valid.")
+
+    try:
+        if fmt == "pdf":
+            data = generate_pdf(session, content_type)
+            media_type = "application/pdf"
+        else:
+            data = generate_docx(session, content_type)
+            media_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    except Exception as e:
+        logger.error(f"[export/download] generate error: {e}")
+        raise HTTPException(status_code=500, detail="Gagal membuat file. Coba lagi.")
+
+    return StreamingResponse(
+        io.BytesIO(data),
+        media_type=media_type,
+        headers={"Content-Disposition": f'attachment; filename="{session_id}-{content_type}.{fmt}"'},
+    )
 
 
 # ── Debug endpoints ──────────────────────────────────────────────────────────
