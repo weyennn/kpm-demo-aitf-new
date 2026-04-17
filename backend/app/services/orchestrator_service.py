@@ -115,34 +115,47 @@ def extract_key_points(stratkom: str) -> list[str]:
 
 
 # ---------------------------------------------------------------------------
-# OpenRouter
+# Gemini REST API
 # ---------------------------------------------------------------------------
 
-def _openrouter_chat(messages: list[dict], model: str, max_tokens: int = 1000) -> str:
-    from app.core.settings import GEMINI_API_KEY, GEMINI_BASE_URL
-    api_key  = GEMINI_API_KEY or OPENROUTER_API_KEY
-    base_url = GEMINI_BASE_URL if GEMINI_API_KEY else OPENROUTER_BASE_URL
+def _gemini_chat(messages: list[dict], model: str, max_tokens: int = 1000) -> str:
+    from app.core.settings import GEMINI_API_KEY, GEMINI_MODEL_TIM2
+    api_key = GEMINI_API_KEY
     if not api_key:
-        raise ValueError("Tidak ada API key (GEMINI_API_KEY belum diset)")
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
+        raise ValueError("GEMINI_API_KEY belum diset")
+
+    # Pisah system instruction dan user/model turns
+    system_parts = []
+    contents     = []
+    for m in messages:
+        if m["role"] == "system":
+            system_parts.append({"text": m["content"]})
+        elif m["role"] == "user":
+            contents.append({"role": "user",  "parts": [{"text": m["content"]}]})
+        elif m["role"] == "assistant":
+            contents.append({"role": "model", "parts": [{"text": m["content"]}]})
+
+    payload: dict = {
+        "contents": contents,
+        "generationConfig": {"maxOutputTokens": max_tokens},
     }
-    payload = {
-        "model": model,
-        "messages": messages,
-        "max_tokens": max_tokens,
-    }
+    if system_parts:
+        payload["systemInstruction"] = {"parts": system_parts}
+
+    url = (
+        f"https://generativelanguage.googleapis.com/v1beta/models/"
+        f"{model}:generateContent?key={api_key}"
+    )
     with httpx.Client(timeout=60) as client:
-        resp = client.post(
-            f"{base_url}/chat/completions",
-            headers=headers,
-            json=payload,
-        )
+        resp = client.post(url, json=payload, headers={"Content-Type": "application/json"})
         if not resp.is_success:
-            logger.error(f"LLM API error {resp.status_code}: {resp.text[:500]}")
+            logger.error(f"Gemini API error {resp.status_code}: {resp.text[:500]}")
         resp.raise_for_status()
-        return resp.json()["choices"][0]["message"]["content"]
+    return resp.json()["candidates"][0]["content"]["parts"][0]["text"]
+
+
+def _openrouter_chat(messages: list[dict], model: str, max_tokens: int = 1000) -> str:
+    return _gemini_chat(messages, model, max_tokens)
 
 
 def _call_tim2_openrouter(prompt: str, chunks: list[dict], max_tokens: int = 800) -> dict:
