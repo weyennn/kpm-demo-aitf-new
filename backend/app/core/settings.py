@@ -43,8 +43,8 @@ TIM3_MODEL_ID  = os.getenv("TIM3_MODEL_ID", "team3-comm-strategy-sft-v1")
 # ── OpenRouter (fallback saat Tim 2/Tim 3 belum siap) ───────────────────────
 OPENROUTER_API_KEY    = os.getenv("OPENROUTER_API_KEY", "")
 OPENROUTER_BASE_URL   = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
-OPENROUTER_MODEL_TIM2 = os.getenv("OPENROUTER_MODEL_TIM2", "qwen/qwen-2.5-72b-instruct")
-OPENROUTER_MODEL_TIM3 = os.getenv("OPENROUTER_MODEL_TIM3", "qwen/qwen-2.5-72b-instruct")
+OPENROUTER_MODEL_TIM2 = os.getenv("OPENROUTER_MODEL_TIM2", "qwen/qwen-2.5-7b-instruct:free")
+OPENROUTER_MODEL_TIM3 = os.getenv("OPENROUTER_MODEL_TIM3", "qwen/qwen-2.5-7b-instruct:free")
 
 # ── App ─────────────────────────────────────────────────────────────────────
 APP_ENV     = os.getenv("APP_ENV", "development")
