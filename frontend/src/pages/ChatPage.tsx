@@ -114,8 +114,14 @@ export default function ChatPage() {
         reply = `Ringkasan narasi:\n\n"${apiResult.narasi}"\n\nIngin saya generate versi formal untuk press release?`
       else if (lq.includes('poin') || lq.includes('kunci'))
         reply = `Poin utama:\n${apiResult.key_points.map((kp, i) => `${i + 1}. ${kp}`).join('\n')}`
+      else if (lq.includes('sentimen') || lq.includes('sentiment'))
+        reply = `Sentimen dominan untuk isu **"${apiResult.isu}"** berdasarkan analisis: mayoritas percakapan bersifat **negatif** dengan concern utama pada dampak kebijakan. Ingin lihat breakdown per platform?`
+      else if (lq.includes('platform'))
+        reply = `Isu **"${apiResult.isu}"** paling banyak diperbincangkan di **Media Online** dan **TikTok**. Konten di TikTok cenderung lebih emosional dibanding media online yang lebih faktual.`
+      else if (lq.includes('rekomendasi') || lq.includes('saran') || lq.includes('strategi'))
+        reply = `Rekomendasi untuk isu ini: gunakan strategi **counter-narrative** dengan menonjolkan data faktual dan dampak positif kebijakan. Lanjut ke halaman **Strategi Komunikasi** untuk detail lengkap.`
       else
-        reply = `Berdasarkan query "${apiResult.query}": ${apiResult.docsCount} dokumen relevan ditemukan. Isu utama: **${apiResult.isu}**. Ada yang ingin digali lebih dalam?`
+        reply = `Berdasarkan analisis isu **"${apiResult.isu}"**: ${apiResult.key_points[0] ?? 'Isu ini memerlukan perhatian segera dari pemangku kebijakan.'}. Ada aspek lain yang ingin digali?`
     } else {
       reply = 'Silakan generate analisis terlebih dahulu dengan memasukkan isu di kolom input.'
     }
