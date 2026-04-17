@@ -125,10 +125,12 @@ def download_file(session_id: str, filename: str):
         logger.error(f"[export/download] generate error: {e}")
         raise HTTPException(status_code=500, detail="Gagal membuat file. Coba lagi.")
 
+    label = {"narasi": "Narasi-Isu", "stratkom": "Strategi-Komunikasi", "draft": "Dokumen-KPM"}
+    fname = f"KPM-{label.get(content_type, content_type)}.{fmt}"
     return StreamingResponse(
         io.BytesIO(data),
         media_type=media_type,
-        headers={"Content-Disposition": f'attachment; filename="{session_id}-{content_type}.{fmt}"'},
+        headers={"Content-Disposition": f'attachment; filename="{fname}"'},
     )
 
 
