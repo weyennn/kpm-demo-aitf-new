@@ -144,10 +144,15 @@ def _gemini_chat(messages: list[dict], model: str, max_tokens: int = 1000) -> st
 
     url = (
         f"https://generativelanguage.googleapis.com/v1beta/models/"
-        f"{model}:generateContent?key={api_key}"
+        f"{model}:generateContent"
     )
     with httpx.Client(timeout=60) as client:
-        resp = client.post(url, json=payload, headers={"Content-Type": "application/json"})
+        resp = client.post(
+            url,
+            params={"key": api_key},
+            json=payload,
+            headers={"Content-Type": "application/json"},
+        )
         if not resp.is_success:
             logger.error(f"Gemini API error {resp.status_code}: {resp.text[:500]}")
         resp.raise_for_status()
