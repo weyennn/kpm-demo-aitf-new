@@ -40,7 +40,8 @@ CELERY_BROKER_URL     = os.getenv("CELERY_BROKER_URL", f"redis://{REDIS_HOST}:{R
 CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", f"redis://{REDIS_HOST}:{REDIS_PORT}/1")
 
 # ── Qdrant ──────────────────────────────────────────────────────────────────
-QDRANT_URL = os.getenv("QDRANT_URL", "http://qdrant:6333")
+QDRANT_URL     = os.getenv("QDRANT_URL", "http://qdrant:6333")
+QDRANT_API_KEY = os.getenv("QDRANT_API_KEY", "")
 
 # ── External AI Services (Tim 2 & Tim 3 real API) ───────────────────────────
 TIM2_BASE_URL  = os.getenv("TIM2_API_URL",  "")
@@ -54,8 +55,8 @@ TIM3_MODEL_ID  = os.getenv("TIM3_MODEL_ID", "team3-comm-strategy-sft-v1")
 # ── OpenRouter (fallback saat Tim 2/Tim 3 belum siap) ───────────────────────
 OPENROUTER_API_KEY    = os.getenv("OPENROUTER_API_KEY", "")
 OPENROUTER_BASE_URL   = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
-OPENROUTER_MODEL_TIM2 = os.getenv("OPENROUTER_MODEL_TIM2", "qwen/qwen-2.5-7b-instruct:free")
-OPENROUTER_MODEL_TIM3 = os.getenv("OPENROUTER_MODEL_TIM3", "qwen/qwen-2.5-7b-instruct:free")
+OPENROUTER_MODEL_TIM2 = os.getenv("OPENROUTER_MODEL_TIM2", "meta-llama/llama-3.1-8b-instruct:free")
+OPENROUTER_MODEL_TIM3 = os.getenv("OPENROUTER_MODEL_TIM3", "meta-llama/llama-3.1-8b-instruct:free")
 
 # ── App ─────────────────────────────────────────────────────────────────────
 APP_ENV     = os.getenv("APP_ENV", "development")

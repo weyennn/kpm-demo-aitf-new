@@ -22,10 +22,10 @@ from qdrant_client import QdrantClient
 from qdrant_client.http import models as qmodels
 
 from app.services.embedder import embed_passage, embed_text, embed_batch, EMBEDDING_DIM
+from app.core.settings import QDRANT_URL, QDRANT_API_KEY
 
 logger = logging.getLogger(__name__)
 
-QDRANT_URL      = os.getenv("QDRANT_URL", "http://localhost:6333")
 COLLECTION_NAME = "vector_chunks"
 
 _client: Optional[QdrantClient] = None
@@ -34,7 +34,10 @@ _client: Optional[QdrantClient] = None
 def get_client() -> QdrantClient:
     global _client
     if _client is None:
-        _client = QdrantClient(url=QDRANT_URL)
+        _client = QdrantClient(
+            url=QDRANT_URL,
+            api_key=QDRANT_API_KEY or None,
+        )
     return _client
 
 
