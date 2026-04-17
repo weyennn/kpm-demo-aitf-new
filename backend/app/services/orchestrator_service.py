@@ -47,6 +47,7 @@ def _db_url() -> str:
 
 
 def get_session(session_id: str) -> dict | None:
+    logger.warning(f"[session] get {session_id}")
     try:
         import psycopg
         with psycopg.connect(_db_url()) as conn:
@@ -55,10 +56,14 @@ def get_session(session_id: str) -> dict | None:
                 [session_id],
             ).fetchone()
             if row:
+                logger.warning(f"[session] get {session_id} OK (DB)")
                 return row[0]
+            logger.warning(f"[session] get {session_id} NOT FOUND in DB")
     except Exception as e:
-        logger.warning(f"DB get_session gagal, coba cache: {e}")
-    return _SESSION_CACHE.get(session_id)
+        logger.warning(f"[session] DB get_session gagal: {e}")
+    cached = _SESSION_CACHE.get(session_id)
+    logger.warning(f"[session] get {session_id} cache={'HIT' if cached else 'MISS'}")
+    return cached
 
 
 def _save_session(session_id: str, data: dict) -> None:
