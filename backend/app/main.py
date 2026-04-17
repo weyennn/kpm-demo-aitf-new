@@ -10,12 +10,18 @@ from app.routers.monitoring import router as monitoring_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    import logging
+    log = logging.getLogger(__name__)
+    try:
+        from app.db.migrate import run_migrations
+        run_migrations()
+    except Exception as e:
+        log.warning(f"Migration gagal (lanjut): {e}")
     try:
         from app.services.qdrant_service import setup_collection
         setup_collection()
     except Exception as e:
-        import logging
-        logging.getLogger(__name__).warning(f"Qdrant setup gagal (lanjut): {e}")
+        log.warning(f"Qdrant setup gagal (lanjut): {e}")
     yield
 
 app = FastAPI(
