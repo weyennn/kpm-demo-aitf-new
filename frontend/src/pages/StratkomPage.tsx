@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Markdown as ReactMarkdown } from 'react-markdown'
+import ReactMarkdown from 'react-markdown'
 import {
   Upload, Wand2, Target, Newspaper, Smartphone, Pin,
   ExternalLink, AlertCircle, FileDown,
