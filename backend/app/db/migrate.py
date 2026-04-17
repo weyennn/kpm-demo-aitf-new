@@ -5,6 +5,14 @@ from app.core.settings import DATABASE_URL
 logger = logging.getLogger(__name__)
 
 _SQL = """
+CREATE TABLE IF NOT EXISTS pipeline_sessions (
+    session_id  TEXT PRIMARY KEY,
+    data        JSONB NOT NULL,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    expires_at  TIMESTAMPTZ NOT NULL DEFAULT NOW() + INTERVAL '1 hour'
+);
+CREATE INDEX IF NOT EXISTS idx_pipeline_sessions_expires ON pipeline_sessions (expires_at);
+
 CREATE TABLE IF NOT EXISTS keyword_corpus (
     keyword_id        SERIAL PRIMARY KEY,
     keyword_text      TEXT NOT NULL,

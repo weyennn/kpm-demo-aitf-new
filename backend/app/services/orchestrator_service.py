@@ -33,51 +33,51 @@ from app.core.settings import (
     TIM3_BASE_URL,
     TIM3_API_KEY,
     TIM3_MODEL_ID,
-    CELERY_BROKER_URL,
 )
 
 logger = logging.getLogger(__name__)
 
 _SESSION_CACHE: OrderedDict[str, dict] = OrderedDict()
 _MAX_SESSIONS = 100
-_SESSION_TTL   = 3600  # 1 jam
 
-_redis_client = None
 
-def _get_redis():
-    global _redis_client
-    if _redis_client is not None:
-        return _redis_client
-    try:
-        import redis
-        _redis_client = redis.from_url(CELERY_BROKER_URL, decode_responses=True)
-        _redis_client.ping()
-        return _redis_client
-    except Exception as e:
-        logger.warning(f"Redis tidak tersedia, pakai in-memory cache: {e}")
-        return None
+def _db_url() -> str:
+    from app.core.settings import DATABASE_URL
+    return DATABASE_URL.replace("postgresql+psycopg://", "postgresql://")
 
 
 def get_session(session_id: str) -> dict | None:
-    r = _get_redis()
-    if r:
-        try:
-            raw = r.get(f"session:{session_id}")
-            if raw:
-                return json.loads(raw)
-        except Exception as e:
-            logger.warning(f"Redis get_session gagal: {e}")
+    try:
+        import psycopg
+        with psycopg.connect(_db_url()) as conn:
+            row = conn.execute(
+                "SELECT data FROM pipeline_sessions WHERE session_id = %s AND expires_at > NOW()",
+                [session_id],
+            ).fetchone()
+            if row:
+                return row[0]
+    except Exception as e:
+        logger.warning(f"DB get_session gagal, coba cache: {e}")
     return _SESSION_CACHE.get(session_id)
 
 
 def _save_session(session_id: str, data: dict) -> None:
-    r = _get_redis()
-    if r:
-        try:
-            r.setex(f"session:{session_id}", _SESSION_TTL, json.dumps(data))
+    try:
+        import psycopg
+        with psycopg.connect(_db_url()) as conn:
+            conn.execute(
+                """
+                INSERT INTO pipeline_sessions (session_id, data, expires_at)
+                VALUES (%s, %s, NOW() + INTERVAL '1 hour')
+                ON CONFLICT (session_id) DO UPDATE
+                SET data = EXCLUDED.data, expires_at = EXCLUDED.expires_at
+                """,
+                [session_id, json.dumps(data)],
+            )
+            conn.commit()
             return
-        except Exception as e:
-            logger.warning(f"Redis save_session gagal: {e}")
+    except Exception as e:
+        logger.warning(f"DB save_session gagal, pakai cache: {e}")
     _SESSION_CACHE[session_id] = data
     if len(_SESSION_CACHE) > _MAX_SESSIONS:
         _SESSION_CACHE.popitem(last=False)
