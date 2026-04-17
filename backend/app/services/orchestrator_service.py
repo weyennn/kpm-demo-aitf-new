@@ -63,7 +63,7 @@ def get_session(session_id: str) -> dict | None:
 
 def _save_session(session_id: str, data: dict) -> None:
     url = _db_url()
-    logger.info(f"[session] save {session_id} ke DB (url prefix: {url[:30]}...)")
+    logger.warning(f"[session] save {session_id} ke DB (url prefix: {url[:30]}...)")
     try:
         import psycopg
         with psycopg.connect(url) as conn:
@@ -77,7 +77,7 @@ def _save_session(session_id: str, data: dict) -> None:
                 [session_id, json.dumps(data)],
             )
             conn.commit()
-        logger.info(f"[session] save {session_id} OK")
+        logger.warning(f"[session] save {session_id} OK")
         return
     except Exception as e:
         logger.error(f"[session] DB save_session gagal: {e}")
