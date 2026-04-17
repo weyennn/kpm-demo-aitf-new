@@ -21,8 +21,9 @@ import {
 } from './dummyData'
 import { getToken } from '../auth/auth'
 
-const BASE_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? ''
-const USE_DUMMY = !BASE_URL
+const BASE_URL = (import.meta.env.VITE_API_URL as string | undefined ?? '').replace(/\/$/, '')
+// Pakai dummy hanya kalau VITE_USE_DUMMY=true di env
+const USE_DUMMY = import.meta.env.VITE_USE_DUMMY === 'true'
 
 async function post<T>(path: string, body: unknown): Promise<T> {
   const token = getToken()
