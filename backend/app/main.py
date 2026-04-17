@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.settings import MODEL_MODE
@@ -7,7 +8,18 @@ from app.routers.orchestrator import router as orchestrator_router
 from app.routers.dashboard import router as dashboard_router
 from app.routers.monitoring import router as monitoring_router
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    try:
+        from app.services.qdrant_service import setup_collection
+        setup_collection()
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(f"Qdrant setup gagal (lanjut): {e}")
+    yield
+
 app = FastAPI(
+    lifespan=lifespan,
     title="Tim 4 RAG + MVP Backend",
     description=(
         "Backend orkestrator Tim 4. "
