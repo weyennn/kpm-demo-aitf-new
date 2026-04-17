@@ -115,52 +115,34 @@ def extract_key_points(stratkom: str) -> list[str]:
 
 
 # ---------------------------------------------------------------------------
-# Gemini REST API
+# Groq (OpenAI-compatible)
 # ---------------------------------------------------------------------------
 
-def _gemini_chat(messages: list[dict], model: str, max_tokens: int = 1000) -> str:
-    from app.core.settings import GEMINI_API_KEY, GEMINI_MODEL_TIM2
-    api_key = GEMINI_API_KEY
+def _openrouter_chat(messages: list[dict], model: str, max_tokens: int = 1000) -> str:
+    from app.core.settings import GROQ_API_KEY, GROQ_BASE_URL
+    api_key  = GROQ_API_KEY or OPENROUTER_API_KEY
+    base_url = GROQ_BASE_URL if GROQ_API_KEY else OPENROUTER_BASE_URL
     if not api_key:
-        raise ValueError("GEMINI_API_KEY belum diset")
-
-    # Gabungkan system message ke pesan user pertama
-    system_text = ""
-    contents    = []
-    for m in messages:
-        if m["role"] == "system":
-            system_text += m["content"] + "\n\n"
-        elif m["role"] == "user":
-            text = (system_text + m["content"]) if system_text else m["content"]
-            contents.append({"role": "user",  "parts": [{"text": text}]})
-            system_text = ""
-        elif m["role"] == "assistant":
-            contents.append({"role": "model", "parts": [{"text": m["content"]}]})
-
-    payload: dict = {
-        "contents": contents,
-        "generationConfig": {"maxOutputTokens": max_tokens},
+        raise ValueError("GROQ_API_KEY belum diset")
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
     }
-
-    url = (
-        f"https://generativelanguage.googleapis.com/v1/models/"
-        f"{model}:generateContent"
-    )
+    payload = {
+        "model"     : model,
+        "messages"  : messages,
+        "max_tokens": max_tokens,
+    }
     with httpx.Client(timeout=60) as client:
         resp = client.post(
-            url,
-            params={"key": api_key},
+            f"{base_url}/chat/completions",
+            headers=headers,
             json=payload,
-            headers={"Content-Type": "application/json"},
         )
         if not resp.is_success:
-            logger.error(f"Gemini API error {resp.status_code}: {resp.text[:500]}")
+            logger.error(f"LLM API error {resp.status_code}: {resp.text[:500]}")
         resp.raise_for_status()
-    return resp.json()["candidates"][0]["content"]["parts"][0]["text"]
-
-
-def _openrouter_chat(messages: list[dict], model: str, max_tokens: int = 1000) -> str:
-    return _gemini_chat(messages, model, max_tokens)
+        return resp.json()["choices"][0]["message"]["content"]
 
 
 def _call_tim2_openrouter(prompt: str, chunks: list[dict], max_tokens: int = 800) -> dict:

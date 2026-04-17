@@ -52,17 +52,18 @@ TIM3_BASE_URL  = os.getenv("TIM3_API_URL",  "")
 TIM3_API_KEY   = os.getenv("TIM3_API_KEY",  "")
 TIM3_MODEL_ID  = os.getenv("TIM3_MODEL_ID", "team3-comm-strategy-sft-v1")
 
-# ── Gemini (default LLM, ganti OpenRouter) ──────────────────────────────────
-GEMINI_API_KEY    = os.getenv("GEMINI_API_KEY", "")
-GEMINI_BASE_URL   = os.getenv("GEMINI_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai")
-GEMINI_MODEL_TIM2 = os.getenv("GEMINI_MODEL_TIM2", "gemini-2.0-flash-lite")
-GEMINI_MODEL_TIM3 = os.getenv("GEMINI_MODEL_TIM3", "gemini-2.0-flash-lite")
+# ── Groq (default LLM, free tier) ───────────────────────────────────────────
+GROQ_API_KEY    = os.getenv("GROQ_API_KEY", "")
+GROQ_BASE_URL   = os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1")
+GROQ_MODEL_TIM2 = os.getenv("GROQ_MODEL_TIM2", "llama-3.1-8b-instant")
+GROQ_MODEL_TIM3 = os.getenv("GROQ_MODEL_TIM3", "llama-3.1-8b-instant")
 
-# Backward-compat alias (kode lama yang masih pakai OPENROUTER_*)
-OPENROUTER_API_KEY    = os.getenv("OPENROUTER_API_KEY", GEMINI_API_KEY)
-OPENROUTER_BASE_URL   = os.getenv("OPENROUTER_BASE_URL", GEMINI_BASE_URL)
-OPENROUTER_MODEL_TIM2 = os.getenv("OPENROUTER_MODEL_TIM2", GEMINI_MODEL_TIM2)
-OPENROUTER_MODEL_TIM3 = os.getenv("OPENROUTER_MODEL_TIM3", GEMINI_MODEL_TIM3)
+# Backward-compat alias
+GEMINI_API_KEY        = os.getenv("GEMINI_API_KEY", "")
+OPENROUTER_API_KEY    = os.getenv("OPENROUTER_API_KEY", GROQ_API_KEY)
+OPENROUTER_BASE_URL   = os.getenv("OPENROUTER_BASE_URL", GROQ_BASE_URL)
+OPENROUTER_MODEL_TIM2 = os.getenv("OPENROUTER_MODEL_TIM2", GROQ_MODEL_TIM2)
+OPENROUTER_MODEL_TIM3 = os.getenv("OPENROUTER_MODEL_TIM3", GROQ_MODEL_TIM3)
 
 # ── App ─────────────────────────────────────────────────────────────────────
 APP_ENV     = os.getenv("APP_ENV", "development")
