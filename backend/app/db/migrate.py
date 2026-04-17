@@ -60,10 +60,17 @@ CREATE INDEX IF NOT EXISTS idx_batch_manifest_start_time   ON batch_manifest (st
 
 def run_migrations():
     url = DATABASE_URL.replace("postgresql+psycopg://", "postgresql://")
+    logger.info(f"Menjalankan migration ke DB...")
     try:
         with psycopg.connect(url) as conn:
-            conn.execute(_SQL)
+            for stmt in _SQL.split(";"):
+                stmt = stmt.strip()
+                if stmt:
+                    try:
+                        conn.execute(stmt)
+                    except Exception as e:
+                        logger.warning(f"Statement gagal (skip): {e} | SQL: {stmt[:80]}")
             conn.commit()
         logger.info("Migration selesai.")
     except Exception as e:
-        logger.warning(f"Migration gagal (lanjut): {e}")
+        logger.error(f"Migration gagal total: {e}")
