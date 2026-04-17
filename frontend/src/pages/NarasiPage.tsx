@@ -43,6 +43,8 @@ export default function NarasiPage() {
   }
 
   const stepMeta = session.stepMeta
+  const isFallback = Object.values(stepMeta).some((m: any) => m?.fallback_used)
+  const mockCls = isFallback ? 'bg-amber-50 border-amber-300' : 'bg-white border-border'
 
   return (
     <div className="p-6 overflow-y-auto h-full">
@@ -95,9 +97,12 @@ export default function NarasiPage() {
           </div>
 
           {/* Ringkasan */}
-          <div className="bg-white border border-border rounded-xl p-5">
-            <div className="text-[9.5px] font-mono uppercase tracking-widest text-text-muted mb-3 border-l-[3px] border-primary pl-2">
-              Ringkasan Isu
+          <div className={`${mockCls} border rounded-xl p-5`}>
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-[9.5px] font-mono uppercase tracking-widest text-text-muted border-l-[3px] border-primary pl-2">
+                Ringkasan Isu
+              </div>
+              {isFallback && <span className="text-[10px] font-mono bg-amber-200 text-amber-800 px-2 py-0.5 rounded-full">⚠ Mock Output</span>}
             </div>
             <div className="prose prose-sm max-w-none text-text-main text-[13.5px] leading-relaxed">
               <ReactMarkdown>{narasi.narasi}</ReactMarkdown>
@@ -105,7 +110,7 @@ export default function NarasiPage() {
           </div>
 
           {/* Poin Kunci */}
-          <div className="bg-white border border-border rounded-xl p-5">
+          <div className={`${mockCls} border rounded-xl p-5`}>
             <div className="text-[9.5px] font-mono uppercase tracking-widest text-text-muted mb-3 border-l-[3px] border-primary pl-2">
               Poin-Poin Kunci
             </div>

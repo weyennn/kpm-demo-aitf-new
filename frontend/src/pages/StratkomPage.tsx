@@ -14,9 +14,11 @@ export default function StratkomPage() {
   const [exporting, setExporting] = useState<string | null>(null)
   const [exportedUrl, setExportedUrl] = useState<string | null>(null)
 
-  const stratkom  = session.stratkom
+  const stratkom   = session.stratkom
   const isRevising = session.step === 'revising'
   const briefDone  = session.step === 'done'
+  const isFallback = Object.values(session.stepMeta).some((m: any) => m?.fallback_used)
+  const mockCls    = isFallback ? 'bg-amber-50 border-amber-300' : 'bg-white border-border'
 
   const handleGenerateBrief = async () => {
     await runRevise(revisiText || undefined, 'docx')
@@ -104,8 +106,11 @@ export default function StratkomPage() {
           )}
 
           {/* Strategi Utama */}
-          <div className="bg-white border border-border rounded-xl p-5">
-            <div className="text-[10.5px] font-mono uppercase tracking-widest text-text-muted mb-3">Strategi Utama</div>
+          <div className={`${mockCls} border rounded-xl p-5`}>
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-[10.5px] font-mono uppercase tracking-widest text-text-muted">Strategi Utama</div>
+              {isFallback && <span className="text-[10px] font-mono bg-amber-200 text-amber-800 px-2 py-0.5 rounded-full">⚠ Mock Output</span>}
+            </div>
             <div className="prose prose-sm max-w-none text-text-main text-[13.5px] leading-relaxed">
               <ReactMarkdown>{stratkom.strategi}</ReactMarkdown>
             </div>
