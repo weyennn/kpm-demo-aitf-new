@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import ReactMarkdown from 'react-markdown'
+import { Markdown as ReactMarkdown } from 'react-markdown'
 import {
   Upload, FileDown, Zap, Calendar, Clock, BarChart2,
   Target, ClipboardList, FileText, ExternalLink, AlertCircle,
