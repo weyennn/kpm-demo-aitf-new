@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { BarChart2, X, ChevronRight, Zap, Bot, BookmarkPlus } from 'lucide-react'
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis,
@@ -7,30 +7,14 @@ import {
 import { useApp } from '../context/AppContext'
 import { ISU_DETAIL_MAP, setSelectedIsu, type IsuDetail } from '../store/isuStore'
 
-const trendData = [
-  { date: '27/2', positif: 61, negatif: 24, netral: 15 },
-  { date: '28/2', positif: 59, negatif: 27, netral: 14 },
-  { date: '1/3',  positif: 55, negatif: 30, netral: 15 },
-  { date: '2/3',  positif: 57, negatif: 28, netral: 15 },
-  { date: '3/3',  positif: 60, negatif: 25, netral: 15 },
-  { date: '4/3',  positif: 58, negatif: 27, netral: 15 },
-]
+const BASE_URL = (import.meta.env.VITE_API_URL as string | undefined ?? '').replace(/\/$/, '')
 
-const platformData = [
-  { platform: 'Twitter/X',    positif: 62, netral: 16, negatif: 22 },
-  { platform: 'TikTok',       positif: 48, netral: 19, negatif: 33 },
-  { platform: 'Media Online', positif: 71, netral: 12, negatif: 17 },
-  { platform: 'Instagram',    positif: 66, netral: 18, negatif: 16 },
-]
-
-const isuSentimen = [
-  { isu: 'PP TUNAS',             pos: 71, neu: 18, neg: 11 },
-  { isu: 'Internet Gratis Desa', pos: 61, neu: 20, neg: 19 },
-  { isu: 'Literasi Digital',     pos: 55, neu: 25, neg: 20 },
-  { isu: 'Banjir Jabodetabek',   pos: 10, neu: 22, neg: 68 },
-  { isu: 'Hoaks Vaksin',         pos:  8, neu:  4, neg: 88 },
-  { isu: 'Judi Online Pelajar',  pos:  5, neu:  4, neg: 91 },
-]
+interface SentimenStats {
+  ringkasan: { positif: number; negatif: number; netral: number; total: number }
+  trend: { date: string; positif: number; negatif: number; netral: number }[]
+  platform: { platform: string; positif: number; negatif: number; netral: number }[]
+  per_isu: { isu: string; pos: number; neu: number; neg: number }[]
+}
 
 // ── Modal Detail Isu ─────────────────────────────────────────────
 function IsuDetailModal({ detail, onClose, onAnalisis, onChatbot }: {
@@ -185,6 +169,21 @@ function IsuDetailModal({ detail, onClose, onAnalisis, onChatbot }: {
 export default function SentimenPage() {
   const { navigate } = useApp()
   const [modalIsu, setModalIsu] = useState<IsuDetail | null>(null)
+  const [stats, setStats] = useState<SentimenStats | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch(`${BASE_URL}/v1/sentimen/stats`)
+      .then(r => r.json())
+      .then(d => setStats(d))
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
+  const ring     = stats?.ringkasan
+  const trendData    = stats?.trend    ?? []
+  const platformData = stats?.platform ?? []
+  const isuSentimen  = stats?.per_isu  ?? []
 
   const openDetail = (isuNama: string) => {
     const detail = ISU_DETAIL_MAP[isuNama]
@@ -205,14 +204,16 @@ export default function SentimenPage() {
         {/* Metric cards */}
         <div className="grid grid-cols-3 gap-3.5">
           {[
-            { lbl: 'Positif', val: '58.3%', delta: '↑ 3.1% dari kemarin', color: 'border-t-success', valCls: 'text-success', deltaPos: true },
-            { lbl: 'Netral',  val: '14.9%', delta: '= stabil',             color: 'border-t-warning', valCls: 'text-warning', deltaPos: true },
-            { lbl: 'Negatif', val: '26.8%', delta: '↑ 2.1% kemarin',      color: 'border-t-danger',  valCls: 'text-danger',  deltaPos: false },
+            { lbl: 'Positif', val: ring ? `${ring.positif}%` : '—', color: 'border-t-success', valCls: 'text-success' },
+            { lbl: 'Netral',  val: ring ? `${ring.netral}%`  : '—', color: 'border-t-warning', valCls: 'text-warning' },
+            { lbl: 'Negatif', val: ring ? `${ring.negatif}%` : '—', color: 'border-t-danger',  valCls: 'text-danger'  },
           ].map(m => (
             <div key={m.lbl} className={`bg-white border border-border border-t-[3px] ${m.color} rounded-2xl p-5 shadow-card`}>
               <div className="text-[11px] font-semibold uppercase tracking-wider text-text-muted mb-2">{m.lbl}</div>
-              <div className={`text-[32px] font-extrabold leading-none mb-1.5 ${m.valCls}`}>{m.val}</div>
-              <div className={`text-[11.5px] font-semibold ${m.deltaPos ? 'text-success' : 'text-danger'}`}>{m.delta}</div>
+              <div className={`text-[32px] font-extrabold leading-none mb-1.5 ${m.valCls}`}>
+                {loading ? <span className="text-[16px] text-text-muted">Memuat...</span> : m.val}
+              </div>
+              <div className="text-[11.5px] text-text-muted">{ring ? `dari ${ring.total.toLocaleString('id')} konten berlabel` : ''}</div>
             </div>
           ))}
         </div>
@@ -274,6 +275,9 @@ export default function SentimenPage() {
             <div className="text-[11.5px] text-text-muted mt-0.5">Klik Detail untuk lihat analisis lengkap</div>
           </div>
           <div className="space-y-3">
+            {isuSentimen.length === 0 && !loading && (
+              <p className="text-[12px] text-text-muted text-center py-4">Belum ada data keyword aktif.</p>
+            )}
             {isuSentimen.map(r => (
               <div key={r.isu}>
                 <div className="flex justify-between mb-1.5 items-center">
