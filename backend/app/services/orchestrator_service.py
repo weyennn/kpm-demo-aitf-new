@@ -124,14 +124,16 @@ def _gemini_chat(messages: list[dict], model: str, max_tokens: int = 1000) -> st
     if not api_key:
         raise ValueError("GEMINI_API_KEY belum diset")
 
-    # Pisah system instruction dan user/model turns
-    system_parts = []
-    contents     = []
+    # Gabungkan system message ke pesan user pertama
+    system_text = ""
+    contents    = []
     for m in messages:
         if m["role"] == "system":
-            system_parts.append({"text": m["content"]})
+            system_text += m["content"] + "\n\n"
         elif m["role"] == "user":
-            contents.append({"role": "user",  "parts": [{"text": m["content"]}]})
+            text = (system_text + m["content"]) if system_text else m["content"]
+            contents.append({"role": "user",  "parts": [{"text": text}]})
+            system_text = ""
         elif m["role"] == "assistant":
             contents.append({"role": "model", "parts": [{"text": m["content"]}]})
 
@@ -139,8 +141,6 @@ def _gemini_chat(messages: list[dict], model: str, max_tokens: int = 1000) -> st
         "contents": contents,
         "generationConfig": {"maxOutputTokens": max_tokens},
     }
-    if system_parts:
-        payload["systemInstruction"] = {"parts": system_parts}
 
     url = (
         f"https://generativelanguage.googleapis.com/v1/models/"
