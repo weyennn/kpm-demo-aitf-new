@@ -66,7 +66,7 @@ export default function ChatbotPage() {
   const inputRef = useRef<HTMLInputElement>(null)
   const endRef   = useRef<HTMLDivElement>(null)
 
-  // Riwayat untuk konteks AI (format OpenRouter)
+  // Riwayat untuk konteks AI (format Groq)
   const historyRef = useRef<ChatHistory[]>([])
 
   useEffect(() => {
@@ -114,7 +114,7 @@ export default function ChatbotPage() {
         </div>
         <div>
           <h1 className="text-[14px] font-bold text-text-main">Chatbot AI</h1>
-          <p className="text-[11px] text-text-muted">Asisten cerdas KPM × AITF — powered by OpenRouter</p>
+          <p className="text-[11px] text-text-muted">Asisten cerdas KPM × AITF — powered by Groq</p>
         </div>
         <div className="ml-auto flex items-center gap-2 px-3 py-1.5 bg-success/10 border border-success/20 rounded-full">
           <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
@@ -165,7 +165,7 @@ export default function ChatbotPage() {
             {error && (
               <div className="flex items-center gap-2 text-[12px] text-danger bg-red-50 border border-red-200 rounded-xl px-4 py-3">
                 <AlertCircle size={13} className="flex-shrink-0" />
-                Pastikan backend berjalan dan <code className="font-mono bg-red-100 px-1 rounded">OPENROUTER_API_KEY</code> sudah diset di <code className="font-mono bg-red-100 px-1 rounded">.env</code>
+                Pastikan backend berjalan dan <code className="font-mono bg-red-100 px-1 rounded">GROQ_API_KEY</code> sudah diset di <code className="font-mono bg-red-100 px-1 rounded">.env</code>
               </div>
             )}
 

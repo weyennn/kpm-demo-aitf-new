@@ -1,5 +1,5 @@
 """
-Router Tim 3 — Strategi Komunikasi (via OpenRouter).
+Router Tim 3 — Strategi Komunikasi (via Groq).
 Prefix /mock/v1/tim3 untuk dev paralel sebelum API real Tim 3 siap.
 
 Endpoint:
@@ -13,7 +13,7 @@ import time
 import httpx
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from app.core.settings import OPENROUTER_API_KEY, OPENROUTER_BASE_URL, OPENROUTER_MODEL_TIM3
+from app.core.settings import GROQ_API_KEY, GROQ_BASE_URL, GROQ_MODEL_TIM3
 from app.mocks.mock_responses import mock_tim3_chat_completions, mock_models_tim3
 
 router = APIRouter(prefix="/mock/v1/tim3", tags=["Tim 3 — Strategi Komunikasi"])
@@ -36,21 +36,21 @@ class ChatCompletionRequest(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Helper OpenRouter
+# Helper Groq
 # ---------------------------------------------------------------------------
 
 def _chat(messages: list[dict], max_tokens: int) -> str:
     headers = {
-        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+        "Authorization": f"Bearer {GROQ_API_KEY}",
         "Content-Type": "application/json",
         "HTTP-Referer": "https://kpm.local",
         "X-Title": "KPM Tim 4 — Tim 3",
     }
     with httpx.Client(timeout=60) as client:
         resp = client.post(
-            f"{OPENROUTER_BASE_URL}/chat/completions",
+            f"{GROQ_BASE_URL}/chat/completions",
             headers=headers,
-            json={"model": OPENROUTER_MODEL_TIM3, "messages": messages, "max_tokens": max_tokens},
+            json={"model": GROQ_MODEL_TIM3, "messages": messages, "max_tokens": max_tokens},
         )
         resp.raise_for_status()
         return resp.json()["choices"][0]["message"]["content"]
@@ -76,7 +76,7 @@ def get_model(model_id: str):
 def chat_completions(req: ChatCompletionRequest):
     msgs = [m.model_dump() for m in req.messages]
 
-    if not OPENROUTER_API_KEY:
+    if not GROQ_API_KEY:
         return mock_tim3_chat_completions(messages=msgs, max_tokens=req.max_tokens)
 
     try:
@@ -88,7 +88,7 @@ def chat_completions(req: ChatCompletionRequest):
         "id"     : f"chatcmpl-{uuid.uuid4().hex[:8]}",
         "object" : "chat.completion",
         "created": int(time.time()),
-        "model"  : OPENROUTER_MODEL_TIM3,
+        "model"  : GROQ_MODEL_TIM3,
         "choices": [{"index": 0, "message": {"role": "assistant", "content": content}, "finish_reason": "stop"}],
         "usage"  : {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
         "citations": {"regulations": [], "press_statements": []},

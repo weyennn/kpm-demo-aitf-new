@@ -58,15 +58,8 @@ GROQ_BASE_URL   = os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1")
 GROQ_MODEL_TIM2 = os.getenv("GROQ_MODEL_TIM2", "llama-3.1-8b-instant")
 GROQ_MODEL_TIM3 = os.getenv("GROQ_MODEL_TIM3", "llama-3.1-8b-instant")
 
-# Backward-compat alias
-GEMINI_API_KEY        = os.getenv("GEMINI_API_KEY", "")
-OPENROUTER_API_KEY    = os.getenv("OPENROUTER_API_KEY", GROQ_API_KEY)
-OPENROUTER_BASE_URL   = os.getenv("OPENROUTER_BASE_URL", GROQ_BASE_URL)
-OPENROUTER_MODEL_TIM2 = os.getenv("OPENROUTER_MODEL_TIM2", GROQ_MODEL_TIM2)
-OPENROUTER_MODEL_TIM3 = os.getenv("OPENROUTER_MODEL_TIM3", GROQ_MODEL_TIM3)
-
 # ── App ─────────────────────────────────────────────────────────────────────
 APP_ENV     = os.getenv("APP_ENV", "development")
-# "mock" | "openrouter" | "custom" (Tim 2/Tim 3 real)
-MODEL_MODE  = os.getenv("MODEL_MODE", "openrouter")
+# "mock" | "groq" | "custom" (Tim 2/Tim 3 real)
+MODEL_MODE  = os.getenv("MODEL_MODE", "groq")
 DEBUG       = os.getenv("DEBUG", "false").lower() == "true"

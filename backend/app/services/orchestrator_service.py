@@ -1,15 +1,15 @@
 """
-Pipeline utama Tim 4 (RAG + OpenRouter):
+Pipeline utama Tim 4 (RAG + Groq):
 
   Step 1 — RETRIEVAL : Embed query → search Qdrant → ambil top-K chunks
-  Step 2 — NARASI    : Kirim query + context ke Tim 2 / OpenRouter → narasi isu
-  Step 3 — STRATKOM  : Kirim narasi ke Tim 3 / OpenRouter → strategi komunikasi
+  Step 2 — NARASI    : Kirim query + context ke Tim 2 / Groq → narasi isu
+  Step 3 — STRATKOM  : Kirim narasi ke Tim 3 / Groq → strategi komunikasi
   Step 4 — RETURN    : Gabungkan hasil ke frontend
 
 MODEL_MODE di settings:
-  "openrouter" — pakai OpenRouter API (default)
-  "custom"     — pakai API real Tim 2 & Tim 3
-  "mock"       — pakai template hardcoded (fallback / offline)
+  "groq"   — pakai Groq API (default)
+  "custom" — pakai API real Tim 2 & Tim 3
+  "mock"   — pakai template hardcoded (fallback / offline)
 """
 
 import re
@@ -23,10 +23,10 @@ from collections import OrderedDict
 from app.services.qdrant_service import search_filtered
 from app.core.settings import (
     MODEL_MODE,
-    OPENROUTER_API_KEY,
-    OPENROUTER_BASE_URL,
-    OPENROUTER_MODEL_TIM2,
-    OPENROUTER_MODEL_TIM3,
+    GROQ_API_KEY,
+    GROQ_BASE_URL,
+    GROQ_MODEL_TIM2,
+    GROQ_MODEL_TIM3,
     TIM2_BASE_URL,
     TIM2_API_KEY,
     TIM2_MODEL_ID,
@@ -126,10 +126,9 @@ def extract_key_points(stratkom: str) -> list[str]:
 # Groq (OpenAI-compatible)
 # ---------------------------------------------------------------------------
 
-def _openrouter_chat(messages: list[dict], model: str, max_tokens: int = 1000) -> str:
-    from app.core.settings import GROQ_API_KEY, GROQ_BASE_URL
-    api_key  = GROQ_API_KEY or OPENROUTER_API_KEY
-    base_url = GROQ_BASE_URL if GROQ_API_KEY else OPENROUTER_BASE_URL
+def _groq_chat(messages: list[dict], model: str, max_tokens: int = 1000) -> str:
+    api_key  = GROQ_API_KEY
+    base_url = GROQ_BASE_URL
     if not api_key:
         raise ValueError("GROQ_API_KEY belum diset")
     headers = {
@@ -153,7 +152,7 @@ def _openrouter_chat(messages: list[dict], model: str, max_tokens: int = 1000) -
         return resp.json()["choices"][0]["message"]["content"]
 
 
-def _call_tim2_openrouter(prompt: str, chunks: list[dict], max_tokens: int = 400) -> dict:
+def _call_tim2_groq(prompt: str, chunks: list[dict], max_tokens: int = 400) -> dict:
     context_text = "\n\n".join(
         f"[Chunk {i+1}] {c['text']}" for i, c in enumerate(chunks[:5])
     ) if chunks else "Tidak ada konteks tambahan."
@@ -183,7 +182,7 @@ def _call_tim2_openrouter(prompt: str, chunks: list[dict], max_tokens: int = 400
         },
     ]
 
-    raw = _openrouter_chat(messages, OPENROUTER_MODEL_TIM2, max_tokens)
+    raw = _groq_chat(messages, GROQ_MODEL_TIM2, max_tokens)
 
     try:
         json_match = re.search(r'\{.*\}', raw, re.DOTALL)
@@ -205,7 +204,7 @@ def _call_tim2_openrouter(prompt: str, chunks: list[dict], max_tokens: int = 400
     }
 
 
-def _call_tim3_openrouter(narasi: str, meta: dict, channel: str = "press") -> dict:
+def _call_tim3_groq(narasi: str, meta: dict, channel: str = "press") -> dict:
     messages = [
         {
             "role": "system",
@@ -227,7 +226,7 @@ def _call_tim3_openrouter(narasi: str, meta: dict, channel: str = "press") -> di
             ),
         },
     ]
-    stratkom = _openrouter_chat(messages, OPENROUTER_MODEL_TIM3, max_tokens=600)
+    stratkom = _groq_chat(messages, GROQ_MODEL_TIM3, max_tokens=600)
     return {"stratkom": stratkom, "citations": {"regulations": [], "press_statements": []}}
 
 
@@ -391,11 +390,11 @@ def run_pipeline(
     mode = MODEL_MODE
 
     try:
-        if mode == "openrouter":
-            if not OPENROUTER_API_KEY:
-                raise ValueError("OPENROUTER_API_KEY belum diset")
-            tim2 = _call_tim2_openrouter(prompt, chunks)
-            tim3 = _call_tim3_openrouter(tim2["narasi_text"], tim2["meta"], channel)
+        if mode == "groq":
+            if not GROQ_API_KEY:
+                raise ValueError("GROQ_API_KEY belum diset")
+            tim2 = _call_tim2_groq(prompt, chunks)
+            tim3 = _call_tim3_groq(tim2["narasi_text"], tim2["meta"], channel)
 
         elif mode == "custom":
             tim2 = _call_tim2_custom(prompt, chunks)

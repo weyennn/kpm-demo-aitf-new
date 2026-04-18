@@ -1,5 +1,5 @@
 """
-Router Tim 2 — Narasi Isu (via OpenRouter).
+Router Tim 2 — Narasi Isu (via Groq).
 Prefix /mock/v1/tim2 untuk dev paralel sebelum API real Tim 2 siap.
 
 Endpoint:
@@ -16,7 +16,7 @@ import time
 import httpx
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
-from app.core.settings import OPENROUTER_API_KEY, OPENROUTER_BASE_URL, OPENROUTER_MODEL_TIM2
+from app.core.settings import GROQ_API_KEY, GROQ_BASE_URL, GROQ_MODEL_TIM2
 from app.mocks.mock_responses import mock_tim2_completions, mock_tim2_chat_completions, mock_models_tim2
 
 router = APIRouter(prefix="/mock/v1/tim2", tags=["Tim 2 — Narasi Isu"])
@@ -52,21 +52,21 @@ class ChatCompletionRequest(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Helper OpenRouter
+# Helper Groq
 # ---------------------------------------------------------------------------
 
 def _chat(messages: list[dict], max_tokens: int) -> str:
     headers = {
-        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+        "Authorization": f"Bearer {GROQ_API_KEY}",
         "Content-Type": "application/json",
         "HTTP-Referer": "https://kpm.local",
         "X-Title": "KPM Tim 4 — Tim 2",
     }
     with httpx.Client(timeout=60) as client:
         resp = client.post(
-            f"{OPENROUTER_BASE_URL}/chat/completions",
+            f"{GROQ_BASE_URL}/chat/completions",
             headers=headers,
-            json={"model": OPENROUTER_MODEL_TIM2, "messages": messages, "max_tokens": max_tokens},
+            json={"model": GROQ_MODEL_TIM2, "messages": messages, "max_tokens": max_tokens},
         )
         resp.raise_for_status()
         return resp.json()["choices"][0]["message"]["content"]
@@ -100,7 +100,7 @@ def get_model(model_id: str):
 def text_completions(req: CompletionRequest):
     ctx_list = [c.model_dump() for c in req.context]
 
-    if not OPENROUTER_API_KEY:
+    if not GROQ_API_KEY:
         return mock_tim2_completions(prompt=req.prompt, context=ctx_list, max_tokens=req.max_tokens)
 
     context_text = "\n\n".join(
@@ -134,7 +134,7 @@ def text_completions(req: CompletionRequest):
         "id"     : f"cmpl-{uuid.uuid4().hex[:8]}",
         "object" : "text_completion",
         "created": int(time.time()),
-        "model"  : OPENROUTER_MODEL_TIM2,
+        "model"  : GROQ_MODEL_TIM2,
         "choices": [{"text": narasi_text, "index": 0, "finish_reason": "stop"}],
         "usage"  : {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
         "context_used": ctx_list[:3],
@@ -154,7 +154,7 @@ def text_completions(req: CompletionRequest):
 def chat_completions(req: ChatCompletionRequest):
     msgs = [m.model_dump() for m in req.messages]
 
-    if not OPENROUTER_API_KEY:
+    if not GROQ_API_KEY:
         return mock_tim2_chat_completions(messages=msgs, max_tokens=req.max_tokens)
 
     try:
@@ -166,7 +166,7 @@ def chat_completions(req: ChatCompletionRequest):
         "id"     : f"chatcmpl-{uuid.uuid4().hex[:8]}",
         "object" : "chat.completion",
         "created": int(time.time()),
-        "model"  : OPENROUTER_MODEL_TIM2,
+        "model"  : GROQ_MODEL_TIM2,
         "choices": [{"index": 0, "message": {"role": "assistant", "content": content}, "finish_reason": "stop"}],
         "usage"  : {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
     }
